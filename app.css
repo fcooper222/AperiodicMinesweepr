@@ -1,0 +1,4 @@
+canvas {
+    display: block; /* Prevents inline display issues */
+    margin: auto;   /* Centers the canvas */
+  }
