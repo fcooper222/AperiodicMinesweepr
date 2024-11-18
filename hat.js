@@ -42,9 +42,6 @@ function drawPolygon(shape, T, f, s, w) {
   return;
 }
 
-window.onload = function () {
-  const scoreDisplay = document.getElementById("scoreDisplay");
-};
 function decideColour(tile) {
   //case for determining what to fill a tile in, characteristics include, whether or not it is seleceted, whether or not it has been explored
   if (tile.selected && !tile.is_explored) {
