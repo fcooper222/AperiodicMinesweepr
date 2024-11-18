@@ -583,6 +583,7 @@ function windowResized() {
   const canvasWidth = windowWidth * width_ratio;
   const canvasHeight = windowHeight * height_ratio;
   resizeCanvas(canvasWidth, canvasHeight);
+  console.log("resize");
 }
 
 function mousePressed() {
