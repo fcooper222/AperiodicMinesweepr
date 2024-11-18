@@ -2,6 +2,7 @@ let to_screen = [20, 0, 0, 0, -20, 0];
 let translation_vector = [1, 0, 0, 0, 1, 0];
 let scaleFactor = 10;
 let lw_scale = 1;
+let score;
 let tiles;
 let level;
 
@@ -26,6 +27,7 @@ let width_ratio = 0.5;
 let adjaceny_radius = 56;
 
 let svg_serial = 0;
+let scoreDisplay;
 
 const cols = {};
 let black;
@@ -37,32 +39,12 @@ function getSVGID() {
 }
 //legacy draw function
 function drawPolygon(shape, T, f, s, w) {
-  // if (f != null) {
-  //   fill(f);
-  // } else {
-  //   noFill();
-  // }
-  // if (s != null) {
-  //   if (s != null) {
-  //     stroke(s);
-  //     strokeWeight(w * lw_scale);
-  //   } else {
-  //     noStroke();
-  //   }
-  // } else {
-  //   noStroke();
-  // }
-
-  // beginShape();
-  // for (let p of shape) {
-  //   const tp = transPt(T, p);
-  //   vertex(tp.x, tp.y);
-  // }
-
-  // endShape(CLOSE);
   return;
 }
 
+window.onload = function () {
+  const scoreDisplay = document.getElementById("scoreDisplay");
+};
 function decideColour(tile) {
   //case for determining what to fill a tile in, characteristics include, whether or not it is seleceted, whether or not it has been explored
   if (tile.selected && !tile.is_explored) {
@@ -515,8 +497,11 @@ function setup() {
   const canvasWidth = windowWidth * width_ratio;
   const canvasHeight = windowHeight * height_ratio;
   createCanvas(canvasWidth, canvasHeight);
+  scoreDisplay = document.getElementById("scoreDisplay");
+
   tiles = [H_init, T_init, P_init, F_init];
   level = 1;
+  score = 0;
 
   black = color("black");
   red = color("red");
@@ -527,6 +512,7 @@ function setup() {
   reset_button = addButton("Reset", function () {
     tiles = [H_init, T_init, P_init, F_init];
     level = 1;
+    score = 0;
     translation_vector = [1, 0, 0, 0, -1, 0];
     tileArr.changeSelected(null);
     tileArr.clear();
@@ -575,7 +561,14 @@ function draw() {
   for (let tile of tilesOnCanvas) {
     drawShape(tile);
   }
+
   pop();
+}
+
+function updateScore(newScore) {
+  console.log("new score!!!" + newScore);
+  score = newScore; // Update the score variable
+  scoreDisplay.innerHTML = `Score: ${score}`; // Update the displayed text
 }
 
 function windowResized() {

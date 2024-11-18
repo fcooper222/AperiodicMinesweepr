@@ -209,6 +209,7 @@ class TileArray {
         this.mineTriggered();
       } else {
         //tile is NOT a mine
+        updateScore(score + 1);
         let adjacent_tiles = this.findAdjacentTo(tile);
         let mineCount = adjacent_tiles.filter((tile) => tile.is_mine).length;
         if (mineCount === 0) {
