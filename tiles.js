@@ -1,12 +1,12 @@
 const distance_threshold = 0.01; // Adjust as needed
+const mine_frequency = 0.2;
 
 class Tile {
-  constructor(label, centre, trans) {
-    this.label = label;
-    this.colour = null;
+  constructor(centre, trans, theta) {
     this.centre = centre;
     this.trans = trans;
-    this.is_mine = Math.random() < 0.16;
+    this.theta = theta;
+    this.is_mine = Math.random() < 0.2;
     this.is_explored = false;
     this.adjacency_number = null;
     this.selected = false;
@@ -211,10 +211,8 @@ class TileArray {
         //tile is NOT a mine
         let adjacent_tiles = this.findAdjacentTo(tile);
         let mineCount = adjacent_tiles.filter((tile) => tile.is_mine).length;
-        console.log(mineCount);
         if (mineCount === 0) {
           //no mines around the current tile, run this function on each of the surrounding tiles
-          console.log("no mine");
           tile.explore();
           for (let adjtile of adjacent_tiles) {
             if (!adjtile.is_explored) {

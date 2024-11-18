@@ -1,6 +1,6 @@
 let to_screen = [20, 0, 0, 0, -20, 0];
 let translation_vector = [1, 0, 0, 0, 1, 0];
-
+let scaleFactor = 10;
 let lw_scale = 1;
 let tiles;
 let level;
@@ -111,6 +111,7 @@ function drawShape(tile, debug = false) {
 
   pop();
 }
+
 function findCentreOfShape(shape, T) {
   let tpts = [];
   for (let p of shape) {
@@ -127,37 +128,6 @@ function findCentreOfShape(shape, T) {
   const cx = sumX / tpts.length;
   const cy = sumY / tpts.length;
   return pt(cx, cy);
-}
-
-function polygonToSVG(shape, id, f, s, w) {
-  let verts = "";
-  for (let p of shape) {
-    if (verts.length > 0) {
-      verts = verts + " ";
-    }
-    verts = verts + p.x + "," + p.y;
-  }
-
-  let ids = "";
-  if (id != null) {
-    ids = ` id="${id}"`;
-  }
-
-  let str = ' stroke="none"';
-  if (s != null) {
-    str = ` stroke="rgb(${red(s)},${green(s)},${blue(s)})" stroke-width="${w}"`;
-  }
-
-  let fil = ' fill="none"';
-  if (f != null) {
-    fil = ` fill="rgb(${red(f)},${green(f)},${blue(f)})"`;
-  }
-
-  return `    <polygon${ids} points="${verts}"${str}${fil}/>`;
-}
-
-function getSVGInstance(id, T) {
-  return `    <use xlink:href="#${id}" transform="matrix(${T[0]} ${T[3]} ${T[1]} ${T[4]} ${T[2]} ${T[5]})"/>`;
 }
 
 // The base level of the scene, a single hat tile, including a label
@@ -270,61 +240,6 @@ class MetaTile {
       ch.T = mul(M, ch.T);
     }
   }
-
-  resetSVG() {
-    for (let ch of this.children) {
-      ch.geom.resetSVG();
-    }
-    this.svg_id = null;
-  }
-
-  buildSVGDefs(stream, sc) {
-    if (this.svg_id != null) {
-      return;
-    }
-
-    this.svg_id = getSVGID();
-
-    for (let ch of this.children) {
-      ch.geom.buildSVGDefs(stream, sc);
-    }
-
-    // Construct a fill group that must live at a logical lowest
-    // layer in the draw order.
-
-    stream.push(`  <g id="${this.getSVGFillID()}">`);
-    for (let ch of this.children) {
-      const fid = ch.geom.getSVGFillID();
-      if (fid != null) {
-        stream.push(getSVGInstance(fid, ch.T));
-      }
-    }
-    stream.push("  </g>");
-
-    // Construct a stroke group that must live above all fill groups.
-
-    stream.push(`  <g id="${this.getSVGStrokeID()}">`);
-    for (let ch of this.children) {
-      const sid = ch.geom.getSVGStrokeID();
-      if (sid != null) {
-        stream.push(getSVGInstance(sid, ch.T));
-      }
-    }
-    stream.push(
-      polygonToSVG(this.shape, null, null, black, (this.width * lw_scale) / sc)
-    );
-
-    stream.push("  </g>");
-  }
-
-  getSVGStrokeID() {
-    return `${this.svg_id}s`;
-  }
-
-  getSVGFillID() {
-    return `${this.svg_id}f`;
-  }
-
   getText(stream, T) {
     for (let g of this.children) {
       g.geom.getText(stream, mul(T, g.T));
@@ -336,8 +251,12 @@ function buildTileArray(tile_tree, level) {
   //use the tiles when pressing build super tiles.
   tileArr.clear();
   S = [20, 0, 0, 0, -20, 0];
-  //start on top. add recursively for everything you encounter, check if it is a metatile or a hattile, then take the transformation associated with it and define a new hattile with this transformation, then add this newly defined tile to its associated tile array.
+  //start on top. add recursively for everything you encounter,
+  //check if it is a metatile or a hattile,
+  //then take the transformation associated with it and define a new hattile with this transformation,
+  //then add this newly defined tile to its associated tile array.
   addToArray(S, tile_tree, level);
+  tile_tree = null;
 }
 
 function addToArray(S, node, level) {
@@ -349,7 +268,7 @@ function addToArray(S, node, level) {
       //found add at to tiles.
       centre = findCentreOfShape(hat_outline, mul(S, g.T));
 
-      tileArr.add(new Tile(node.label, centre, mul(S, g.T)));
+      tileArr.add(new Tile(centre, mul(S, g.T), getRotation(mul(S, g.T))));
     } else {
       addToArray(mul(S, g.T), g.geom, level - 1);
     }
@@ -608,11 +527,9 @@ function setup() {
   reset_button = addButton("Reset", function () {
     tiles = [H_init, T_init, P_init, F_init];
     level = 1;
-    radio.selected("H");
-    to_screen = [20, 0, 0, 0, -20, 0];
-    lw_scale = 1;
-    setButtonActive(draw_hats, true);
-    setButtonActive(draw_super, true);
+    translation_vector = [1, 0, 0, 0, -1, 0];
+    tileArr.changeSelected(null);
+    tileArr.clear();
     loop();
   });
   subst_button = addButton("Build Supertiles", function () {
@@ -620,6 +537,7 @@ function setup() {
     tiles = constructMetatiles(patch);
     const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
     buildTileArray(tiles[idx], level);
+    print(tileArr.getTiles());
     ++level;
     loop();
   });
@@ -630,116 +548,13 @@ function setup() {
     loop();
   });
   radio.position(10, box_height);
+  radio.style("visibility", "hidden");
   for (let s of ["H", "T", "P", "F"]) {
     let o = radio.option(s);
     o.onclick = loop;
   }
   radio.selected("H");
   box_height += 40;
-
-  const cp_info = {
-    H1: [0, 137, 212],
-    H: [148, 205, 235],
-    T: [251, 251, 251],
-    P: [250, 250, 250],
-    F: [191, 191, 191],
-  };
-
-  let count = 0;
-  for (let [name, col] of Object.entries(cp_info)) {
-    const label = createSpan(name);
-    label.position(10 + 70 * count, box_height);
-    const cp = createColorPicker(color(...col));
-    cp.mousePressed(function () {
-      loop();
-    });
-    cp.position(10 + 70 * count, box_height + 20);
-    cols[name] = cp;
-
-    ++count;
-    if (count == 2) {
-      count = 0;
-      box_height += 50;
-    }
-  }
-  if (count == 1) {
-    box_height += 50;
-  }
-  box_height += 20;
-
-  translate_button = addButton("Translate", function () {
-    setButtonActive(translate_button, true);
-    setButtonActive(scale_button, false);
-    loop();
-  });
-  scale_button = addButton("Scale", function () {
-    setButtonActive(translate_button, false);
-    setButtonActive(scale_button, true);
-    loop();
-  });
-
-  setButtonActive(translate_button, true);
-  box_height += 10;
-
-  draw_hats = addButton("Draw Hats", function () {
-    setButtonActive(draw_hats, !isButtonActive(draw_hats));
-    loop();
-  });
-  draw_super = addButton("Draw Supertiles", function () {
-    setButtonActive(draw_super, !isButtonActive(draw_super));
-    loop();
-  });
-
-  setButtonActive(draw_hats, true);
-  setButtonActive(draw_super, true);
-  box_height += 10;
-
-  addButton("Save PNG", function () {
-    uibox = false;
-    draw();
-    save("output.png");
-    uibox = true;
-    draw();
-  });
-
-  addButton("Save SVG", function () {
-    svg_serial = 0;
-    for (let t of tiles) {
-      t.resetSVG();
-    }
-
-    const stream = [];
-    stream.push(
-      `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`
-    );
-    stream.push("<defs>");
-    for (let t of tiles) {
-      t.buildSVGDefs(stream, mag(to_screen[0], to_screen[1]));
-    }
-    stream.push("</defs>");
-
-    const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
-    const S = mul(ttrans(width / 2, height / 2), to_screen);
-
-    if (isButtonActive(draw_hats)) {
-      stream.push(getSVGInstance(tiles[idx].getSVGFillID(), S));
-    }
-    if (isButtonActive(draw_super)) {
-      stream.push(getSVGInstance(tiles[idx].getSVGStrokeID(), S));
-    }
-    stream.push("</svg>");
-
-    saveStrings(stream, "output", "svg");
-  });
-
-  addButton("Save Matrices", function () {
-    const stream = [];
-    const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
-    tiles[idx].getText(stream, ident);
-    saveStrings(stream, "output", "txt");
-  });
-
-  box_height -= 5; // remove half the padding
 }
 
 function draw() {
@@ -772,11 +587,6 @@ function windowResized() {
 
 function mousePressed() {
   dragging = true;
-  if (isButtonActive(scale_button)) {
-    scale_centre = transPt(inv(to_screen), pt(width / 2, height / 2));
-    scale_start = pt(mouseX, mouseY);
-    scale_ts = [...to_screen];
-  }
   //always ensure correct size when doing calculation
   const canvasWidth = windowWidth * width_ratio;
   const canvasHeight = windowHeight * height_ratio;
@@ -785,6 +595,8 @@ function mousePressed() {
     x: mouseX - canvasWidth / 2,
     y: mouseY - canvasHeight / 2,
   };
+  console.log(tileArr);
+
   const closest = tileArr.findClosestTile(mousePt);
   if (closest) {
     if (!closest.is_explored) {
@@ -797,25 +609,11 @@ function mousePressed() {
 
 function mouseDragged() {
   if (dragging) {
-    if (isButtonActive(translate_button)) {
-      to_screen = mul(ttrans(mouseX - pmouseX, mouseY - pmouseY), to_screen);
+    to_screen = mul(ttrans(mouseX - pmouseX, mouseY - pmouseY), to_screen);
 
-      const delta = ttrans(mouseX - pmouseX, mouseY - pmouseY);
-      translation_vector = mul(delta, translation_vector);
-    } else if (isButtonActive(scale_button)) {
-      //i dont intend to allow for scaling just yet due to struggles with large numbers of tiles, kept from legacy code for safety
-      let sc =
-        dist(mouseX, mouseY, width / 2, height / 2) /
-        dist(scale_start.x, scale_start.y, width / 2, height / 2);
-      to_screen = mul(
-        mul(
-          ttrans(scale_centre.x, scale_centre.y),
-          mul([sc, 0, 0, 0, sc, 0], ttrans(-scale_centre.x, -scale_centre.y))
-        ),
-        scale_ts
-      );
-      lw_scale = mag(to_screen[0], to_screen[1]) / 20.0;
-    }
+    const delta = ttrans(mouseX - pmouseX, mouseY - pmouseY);
+    translation_vector = mul(delta, translation_vector);
+
     loop();
     return false;
   }
