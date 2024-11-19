@@ -9,9 +9,10 @@ let level;
 let scale_centre;
 let scale_start;
 let scale_ts;
+let explosionSpriteSheet;
 
 let reset_button;
-let subst_button;
+let build_button;
 let translate_button;
 let scale_button;
 let draw_hats;
@@ -37,6 +38,7 @@ function getSVGID() {
   ++svg_serial;
   return ret;
 }
+
 //legacy draw function
 function drawPolygon(shape, T, f, s, w) {
   return;
@@ -487,7 +489,9 @@ function addButton(name, f) {
 
   return ret;
 }
-
+function preload() {
+  explosionSpriteSheet = loadImage("explosion3.png");
+}
 function setup() {
   tileArr = new TileArray();
   windowWidth, windowHeight;
@@ -495,9 +499,13 @@ function setup() {
   const canvasHeight = windowHeight * height_ratio;
   createCanvas(canvasWidth, canvasHeight);
   scoreDisplay = document.getElementById("scoreDisplay");
+  console.log("Width:", explosionSpriteSheet.width);
+  console.log("Height:", explosionSpriteSheet.height);
+  loadExplosionPixels();
+  image(explosionSpriteSheet, 0, 0);
 
   tiles = [H_init, T_init, P_init, F_init];
-  level = 1;
+  level = 5;
   score = 0;
 
   black = color("black");
@@ -508,20 +516,22 @@ function setup() {
 
   reset_button = addButton("Reset", function () {
     tiles = [H_init, T_init, P_init, F_init];
-    level = 1;
-    score = 0;
+    level = 5;
+    updateScore(0);
     translation_vector = [1, 0, 0, 0, -1, 0];
     tileArr.changeSelected(null);
     tileArr.clear();
     loop();
   });
-  subst_button = addButton("Build Supertiles", function () {
+  build_button = addButton("Build Supertiles", function () {
+    console.log(level);
     const patch = constructPatch(...tiles);
     tiles = constructMetatiles(patch);
     const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
     buildTileArray(tiles[idx], level);
     print(tileArr.getTiles());
     ++level;
+    updateScore(0);
     loop();
   });
   box_height += 10;
@@ -542,8 +552,8 @@ function setup() {
 
 function draw() {
   background(255);
-  translate(width / 2, height / 2);
 
+  translate(width / 2, height / 2);
   push();
   //draw selected tile first for aesthetic reasons
   if (tileArr.selected_tile) {
@@ -558,7 +568,7 @@ function draw() {
   for (let tile of tilesOnCanvas) {
     drawShape(tile);
   }
-
+  drawExplosions();
   pop();
 }
 
@@ -586,7 +596,6 @@ function mousePressed() {
     x: mouseX - canvasWidth / 2,
     y: mouseY - canvasHeight / 2,
   };
-  console.log(tileArr);
 
   const closest = tileArr.findClosestTile(mousePt);
   if (closest) {

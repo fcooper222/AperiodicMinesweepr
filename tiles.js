@@ -206,7 +206,10 @@ class TileArray {
       // first of all check if tile is a mine
       if (tile.is_mine) {
         //tile is mine, initiate destruct sequence.
-        this.mineTriggered();
+        triggerExplosion(transPt(translation_vector, tile.centre));
+
+        console.log("mine stepped", tile.centre.x, tile.centre.y);
+        this.mineTriggered(tile);
       } else {
         //tile is NOT a mine
         updateScore(score + 1);
@@ -228,10 +231,9 @@ class TileArray {
       }
     }
   }
-  mineTriggered() {
+  mineTriggered(tile) {
     //function that is called when a mine is stepped on
-
-    console.log("BOOOOM!");
+    console.log("calling trigger explosions");
   }
   // find first tile within a ceratin range using a binary search, then linear add all of the tiles in the range until no more can be.
   rangeSearch(xMin, xMax, yMin, yMax) {
