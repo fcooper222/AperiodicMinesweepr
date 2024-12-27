@@ -1,6 +1,7 @@
 let to_screen = [20, 0, 0, 0, -20, 0];
 let translation_vector = [1, 0, 0, 0, 1, 0];
 let scaleFactor = 10;
+let innerScaleFactor = 0.2;
 let lw_scale = 1;
 let score;
 let tiles;
@@ -10,7 +11,7 @@ let scale_centre;
 let scale_start;
 let scale_ts;
 let explosionSpriteSheet;
-
+let tileSpriteSheet;
 let reset_button;
 let build_button;
 let translate_button;
@@ -52,6 +53,21 @@ function decideColour(tile) {
     return exploredColour;
   } else return unexploredColour;
 }
+
+function drawShapeIMG(tile) {
+  //first get centre of img
+  let tileCentrePt = transPt(translation_vector, tile.centre);
+  let tileIMG = tileImages[tile.tile_image_idx];
+  let IMGCentreX = tileCentrePt.x - tileIMG.width / 2;
+  let IMGCentreY = tileCentrePt.y - tileIMG.height / 2;
+  image(
+    tileIMG,
+    IMGCentreX,
+    IMGCentreY,
+    tileIMG.width * 0.2,
+    tileIMG.height * 0.2
+  );
+}
 function drawShape(tile, debug = false) {
   push();
   let colour = decideColour(tile);
@@ -59,7 +75,7 @@ function drawShape(tile, debug = false) {
   fill(colour);
   stroke(black);
   strokeWeight(1);
-
+  scaledPoints = [];
   beginShape();
 
   for (let p of hat_outline) {
@@ -68,26 +84,25 @@ function drawShape(tile, debug = false) {
   }
 
   endShape(CLOSE);
-  if (tile.adjacency_number) {
-    textAlign(CENTER, CENTER);
-    fill(0);
-    const tc = transPt(translation_vector, tile.centre);
-    text(tile.adjacency_number, tc.x, tc.y);
-  }
+
+  // if (tile.adjacency_number) {
+  //   textAlign(CENTER, CENTER);
+  //   fill(0);
+  //   const tc = transPt(translation_vector, tile.centre);
+  //   text(tile.adjacency_number, tc.x, tc.y);
+  // }
   if (debug == true) {
     // render hat centre pts and the adjaceny checking radii
-    fill("red");
-    noStroke();
+    const tc = transPt(translation_vector, tile.centre);
+    console.log(tc, "draw here");
+    fill("red"); // Set fill color to red
+    noStroke(); // Disable stroke
     ellipse(
-      mul(translation_vector, tile.centre.x),
-      mul(translation_vector, tile.centre.y),
-      5,
-      5
+      tc.x, // X-coordinate
+      tc.y, // Y-coordinate
+      4, // Width of the ellipse
+      4 // Height of the ellipse
     );
-
-    noFill();
-    stroke("black");
-    strokeWeight(1);
   }
 
   pop();
@@ -491,6 +506,7 @@ function addButton(name, f) {
 }
 function preload() {
   explosionSpriteSheet = loadImage("explosion3.png");
+  tileSpriteSheet = loadImage("upscaled.png");
 }
 function setup() {
   tileArr = new TileArray();
@@ -499,20 +515,17 @@ function setup() {
   const canvasHeight = windowHeight * height_ratio;
   createCanvas(canvasWidth, canvasHeight);
   scoreDisplay = document.getElementById("scoreDisplay");
-  console.log("Width:", explosionSpriteSheet.width);
-  console.log("Height:", explosionSpriteSheet.height);
   loadExplosionPixels();
-  image(explosionSpriteSheet, 0, 0);
-
+  loadTilePixels();
   tiles = [H_init, T_init, P_init, F_init];
   level = 5;
   score = 0;
 
   black = color("black");
   red = color("red");
-  unexploredColour = color(244, 220, 180);
-  selectedColour = color(255, 230, 200);
-  exploredColour = color(200, 160, 140);
+  unexploredColour = color(189);
+  selectedColour = color(210);
+  exploredColour = color(220);
 
   reset_button = addButton("Reset", function () {
     tiles = [H_init, T_init, P_init, F_init];
@@ -557,7 +570,7 @@ function draw() {
   push();
   //draw selected tile first for aesthetic reasons
   if (tileArr.selected_tile) {
-    drawShape(tileArr.selected_tile);
+    drawShape(tileArr.selected_tile, true);
   }
   let tilesOnCanvas = tileArr.rangeSearch(
     -windowWidth,
@@ -566,10 +579,14 @@ function draw() {
     windowHeight
   );
   for (let tile of tilesOnCanvas) {
-    drawShape(tile);
+    drawShapeIMG(tile);
   }
   drawExplosions();
   pop();
+}
+
+function getCanvasDimensions() {
+  return { windowWidth, windowHeight };
 }
 
 function updateScore(newScore) {
@@ -599,6 +616,8 @@ function mousePressed() {
 
   const closest = tileArr.findClosestTile(mousePt);
   if (closest) {
+    console.log(closest.trans, calculateTileImage(closest.trans));
+
     if (!closest.is_explored) {
       tileArr.handleInteraction(closest);
       redraw();

@@ -6,6 +6,7 @@ class Tile {
     this.centre = centre;
     this.trans = trans;
     this.theta = theta;
+    this.tile_image_idx = calculateTileImage(trans);
     this.is_mine = Math.random() < 0.2;
     this.is_explored = false;
     this.adjacency_number = null;
@@ -209,7 +210,7 @@ class TileArray {
         triggerExplosion(transPt(translation_vector, tile.centre));
 
         console.log("mine stepped", tile.centre.x, tile.centre.y);
-        this.mineTriggered(tile);
+        this.mineTriggeredSequence(tile);
       } else {
         //tile is NOT a mine
         updateScore(score + 1);
@@ -231,9 +232,14 @@ class TileArray {
       }
     }
   }
-  mineTriggered(tile) {
-    //function that is called when a mine is stepped on
-    console.log("calling trigger explosions");
+  mineTriggeredSequence(tile) {
+    //sequence that occurs when a mine is triggered
+    if (!tile.is_explored) {
+      triggerExplosion(transPt(translation_vector, tile.centre));
+    }
+    tile.is_explored = true;
+    x_area = 10;
+    y_area = 10;
   }
   // find first tile within a ceratin range using a binary search, then linear add all of the tiles in the range until no more can be.
   rangeSearch(xMin, xMax, yMin, yMax) {
