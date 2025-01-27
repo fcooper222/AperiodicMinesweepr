@@ -44,11 +44,23 @@ function drawPolygon(shape, T, f, s, w) {
 
 function decideColour(tile) {
   //case for determining what to fill a tile in, characteristics include, whether or not it is seleceted, whether or not it has been explored
-  if (tile.selected && !tile.is_explored) {
-    return selectedColour;
-  } else if (tile.is_explored) {
-    return exploredColour;
-  } else return unexploredColour;
+  if (!tile.is_explored) {
+    return unexploredColour;
+  } else return exploredColour;
+}
+function drawShapeIMG(tile) {
+  //first get centre of img
+  let tileCentrePt = transPt(translation_vector, tile.centre);
+  let tileIMG = spriteImages[selectImage(tile)];
+  let IMGCentreX = tileCentrePt.x - 66;
+  let IMGCentreY = tileCentrePt.y - 73;
+  image(
+    tileIMG,
+    IMGCentreX,
+    IMGCentreY,
+    tileIMG.width,
+    tileIMG.height
+  );
 }
 function drawShape(tile, debug = false) {
   push();
@@ -487,9 +499,14 @@ function addButton(name, f) {
 
   return ret;
 }
+function preload(){
+  spriteSheet = loadImage('sprite_sheet.png'); 
+}
+
 
 function setup() {
   tileArr = new TileArray();
+  loadGraphics();
   windowWidth, windowHeight;
   const canvasWidth = windowWidth * width_ratio;
   const canvasHeight = windowHeight * height_ratio;
@@ -502,15 +519,16 @@ function setup() {
 
   black = color("black");
   red = color("red");
-  unexploredColour = color(244, 220, 180);
-  selectedColour = color(255, 230, 200);
-  exploredColour = color(200, 160, 140);
+  unexploredColour = color(189);
+  selectedColour = color(189);
+  exploredColour = color(189);
 
   reset_button = addButton("Reset", function () {
     tiles = [H_init, T_init, P_init, F_init];
     level = 1;
     score = 0;
-    translation_vector = [1, 0, 0, 0, -1, 0];
+    translation_vector = [1, 0, 0, 0, 1, 0];
+
     tileArr.changeSelected(null);
     tileArr.clear();
     loop();
@@ -556,9 +574,12 @@ function draw() {
     windowHeight
   );
   for (let tile of tilesOnCanvas) {
-    drawShape(tile);
+    if (tile.is_explored){
+      drawShape(tile);
+    } else {
+      drawShapeIMG(tile);
+    }
   }
-
   pop();
 }
 

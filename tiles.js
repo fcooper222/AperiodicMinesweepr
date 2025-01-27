@@ -9,7 +9,6 @@ class Tile {
     this.is_mine = Math.random() < 0.2;
     this.is_explored = false;
     this.adjacency_number = null;
-    this.selected = false;
     this.flagged = false;
   }
 
@@ -32,9 +31,7 @@ class Tile {
   changeFlagged() {
     this.flagged = !this.flagged;
   }
-  setSelected(bool) {
-    this.selected = bool;
-  }
+
 }
 
 class TileArray {
@@ -46,14 +43,8 @@ class TileArray {
 
   changeSelected(tile) {
     //set new tile to be selected and remove old tile here
-    if (this.selected_tile) {
-      this.selected_tile.setSelected(false);
-    }
+    this.selected_tile=tile;
 
-    this.selected_tile = tile;
-    if (this.selected_tile) {
-      this.selected_tile.setSelected(true);
-    }
   }
 
   add(tile) {
