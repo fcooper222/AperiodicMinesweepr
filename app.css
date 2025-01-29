@@ -2,3 +2,60 @@ canvas {
     display: block; /* Prevents inline display issues */
     margin: auto;   /* Centers the canvas */
   }
+
+  #leaderboard {
+    position: fixed;
+    top: 20px;
+    right: -300px;
+    background-color: #f1f1f1;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    width: 300px;
+    transition: right 0.3s ease-in-out;
+  }
+  
+  #leaderboard.open {
+    right: 20px;
+  }
+  
+  .color-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .color-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .color-slider {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .color-display {
+    width: 100px;
+    height: 50px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+  
+  .apply-button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .apply-button:hover {
+    background-color: #45a049;
+  }
