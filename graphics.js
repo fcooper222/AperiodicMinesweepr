@@ -1,7 +1,8 @@
 //loads each elt in the sprite sheet and puts it in the array :)
 const float_threshold = 0.001 // just incase we get very small floating point numbers that mess up checks for the transformaiton orientation
 let spriteImages = [];
-
+let flagSprite; 
+let mineSprite;
 
 function loadGraphics() {
     spriteSheet.loadPixels();
@@ -12,13 +13,15 @@ function loadGraphics() {
     for (let i = 0; i < 7; i++) {
       spriteImages.push(spriteSheet.get(i * 100, 100, 100, 100));
     }
+
+    flagSprite=spriteImages[13];
+    mineSprite=spriteImages[6];
   }
 
 
 
-  function selectImage(tile){
+  function selectImage(trans){
     //selects an image to render relative to the transformation matrix of the hat tile
-    let trans = tile.trans;
     //check for up down mirror / no mirror cases
     if (Math.abs(trans[1])<float_threshold){
         if (trans[0]>(float_threshold*-1)){

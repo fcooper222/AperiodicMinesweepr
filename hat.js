@@ -23,9 +23,15 @@ let radio;
 let leaderboardElement;
 
 
+let selectedTile = null;
+let startMousePos = null;
+
+let flagMode = false;
 let dragging = false;
 let leaderboardVisible = false;
 let uibox = true;
+let headerHeight=100;
+let leaderboardWidth=300;
 let box_height = 10;
 
 let height_ratio = 1;
@@ -47,10 +53,22 @@ function decideColour(tile) {
     return unexploredColour;
   } else return exploredColour;
 }
+
+
+function drawFlagAt(tile){
+  let tileCentrePt = transPt(translation_vector, tile.centre);
+  image(
+    flagSprite,
+    tileCentrePt.x-25,
+    tileCentrePt.y-25,
+    flagSprite.width*0.35,
+    flagSprite.height*0.35
+  );
+}
 function drawShapeIMG(tile) {
   //first get centre of img
   let tileCentrePt = transPt(translation_vector, tile.centre);
-  let tileIMG = spriteImages[selectImage(tile)];
+  let tileIMG = spriteImages[tile.image_idx];
   let IMGCentreX = tileCentrePt.x - 66;
   let IMGCentreY = tileCentrePt.y - 73;
   image(
@@ -98,7 +116,6 @@ function drawShape(tile, debug = false) {
     stroke("black");
     strokeWeight(1);
   }
-
   pop();
 }
 
@@ -133,7 +150,7 @@ function setButtonActive(but, b) {
 
 
 function preload(){
-  spriteSheet = loadImage('sprite_sheet.png'); 
+  spriteSheet = loadImage('spritenew-min.png'); 
 }
 function toggleLeaderboard() {
   if (!leaderboardVisible) {
@@ -142,7 +159,7 @@ function toggleLeaderboard() {
       
       // makes sure the aninm only starts after elt created
       setTimeout(() => {
-          leaderboard.style('right', '20px');  // slide in 
+          leaderboard.style('right', '0px');  // slide in 
       }, 10);
   } else {
       // slide out
@@ -185,6 +202,8 @@ function setupHeader() {
   flag_btn = createButton('Toggle Flag Mode');
   flag_btn.mousePressed(() => {
     flagMode = !flagMode;
+    flag_btn.style('background-color', flagMode ? 'rgba(255, 0, 0, 0.9)' : 'rgba(42, 42, 42, 0.9)');
+
     loop();
   });
 
@@ -238,7 +257,6 @@ function setup() {
   radio.mousePressed(function () {
     loop();
   });
-  radio.position(10, box_height);
   radio.style("visibility", "hidden");
   for (let s of ["H", "T", "P", "F"]) {
     let o = radio.option(s);
@@ -263,11 +281,17 @@ function draw() {
     windowHeight
   );
   for (let tile of tilesOnCanvas) {
-    if (tile.is_explored){
+    if (tile.is_explored || tile == tileArr.selected_tile){
       drawShape(tile);
     } else {
       drawShapeIMG(tile);
     }
+  }
+
+  //draw flagged tiles
+
+  for (let tile of tileArr.flagged_tiles){
+    drawFlagAt(tile);
   }
   pop();
 }
@@ -277,6 +301,10 @@ function updateScore(newScore) {
   score = newScore; 
   scoreDisplay.innerHTML = `Score: ${score}`; 
 }
+function isOnCanvas(x,y){
+  return (y<=(canvasHeight-headerHeight) && (x<=(canvasWidth-leaderboardWidth) || !leaderboardVisible))
+}
+
 
 function translateMousePt(x,y){
   const canvasWidth = windowWidth * width_ratio;
@@ -297,43 +325,51 @@ function windowResized() {
 }
 
 function mousePressed() {
-  dragging = true;
-  //always ensure correct size when doing calculation
-  let mousePt = translateMousePt(mouseX,mouseY);
-  console.log(tileArr);
-
+  dragging = false;
+  startMousePos = { x: mouseX, y: mouseY };
+  
+  let mousePt = translateMousePt(mouseX, mouseY);
   const closest = tileArr.findClosestTile(mousePt);
-  if (closest) {
-    if (!closest.is_explored) {
-      tileArr.handleInteraction(closest);
+  if (closest && !closest.is_explored) {
+      selectedTile = closest;
+      tileArr.changeSelected(closest);
       redraw();
-    }
   }
+  
   loop();
 }
 
 function mouseDragged() {
-  if (dragging) {
-    to_screen = mul(ttrans(mouseX - pmouseX, mouseY - pmouseY), to_screen);
-
-    const delta = ttrans(mouseX - pmouseX, mouseY - pmouseY);
-    translation_vector = mul(delta, translation_vector);
-
-    loop();
-    return false;
+  const moveDistance = dist(mouseX, mouseY, startMousePos.x, startMousePos.y);
+  const dragThreshold = 5;
+  
+  if (moveDistance > dragThreshold) {
+      dragging = true;
+      
+      // Clear selection if we move too far
+      if (selectedTile) {
+          tileArr.changeSelected(null); 
+          selectedTile = null;
+          redraw();
+      }
+      
+      const delta = ttrans(mouseX - pmouseX, mouseY - pmouseY);
+      to_screen = mul(delta, to_screen);
+      translation_vector = mul(delta, translation_vector);
   }
+  
+  loop();
+  return false;
 }
 
 function mouseReleased() {
-  dragging = false;
-  loop();
-}
-
-function mouseMoved() {
-  let mousePt = translateMousePt(mouseX,mouseY);
-
-  const closest = tileArr.findClosestTile(mousePt);
-  if (closest) {
-    tileArr.changeSelected(closest);
+  if (selectedTile && !dragging) {
+      tileArr.handleInteraction(selectedTile, flagMode);
   }
+  
+  dragging = false;
+  tileArr.changeSelected(null);
+  startMousePos = null;
+  
+  loop();
 }

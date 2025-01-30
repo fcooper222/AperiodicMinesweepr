@@ -2,11 +2,11 @@ const distance_threshold = 0.01; // Adjust as needed
 const mine_frequency = 0.2;
 
 class Tile {
-  constructor(centre, trans, theta) {
+  constructor(centre, trans) {
     this.centre = centre;
     this.trans = trans;
-    this.theta = theta;
     this.is_mine = Math.random() < 0.2;
+    this.image_idx = selectImage(this.trans)
     this.is_explored = false;
     this.adjacency_number = null;
     this.flagged = false;
@@ -37,6 +37,7 @@ class Tile {
 class TileArray {
   constructor() {
     this.hat_tiles = [];
+    this.flagged_tiles=[];
     this.selected_tile = null;
     this.game_score = 0;
   }
@@ -189,12 +190,20 @@ class TileArray {
     return low;
   }
 
-  handleInteraction(tile, clickType = "l") {
-    if (clickType == "r") {
-      //set_flagged = true
+  handleInteraction(tile, flagMode = false) {
+    if (flagMode == true) {
+      if (tile.flagged){
+        //remove from array
+        this.flagged_tiles = this.flagged_tiles.filter(flaggedTile => flaggedTile !== tile);
+      } else {
+        //add to array.
+        this.flagged_tiles.push(tile)
+      }
+
       tile.changeFlagged();
     } else {
       // first of all check if tile is a mine
+      if (!tile.flagged){
       if (tile.is_mine) {
         //tile is mine, initiate destruct sequence.
         this.mineTriggered();
@@ -217,6 +226,7 @@ class TileArray {
           console.log("mine");
         }
       }
+    }
     }
   }
   mineTriggered() {
@@ -259,5 +269,6 @@ class TileArray {
 
   clear() {
     this.hat_tiles = [];
+    this.flagged_tiles=[];
   }
 }
