@@ -29,9 +29,11 @@ let startMousePos = null;
 let flagMode = false;
 let dragging = false;
 let leaderboardVisible = false;
+let colourSelectVisible = false;
+let is3DMode = false;
 let uibox = true;
 let headerHeight=100;
-let leaderboardWidth=300;
+let leaderboardWidth=500;
 let box_height = 10;
 
 let height_ratio = 1;
@@ -49,9 +51,15 @@ let red;
 
 function decideColour(tile) {
   //case for determining what to fill a tile in, characteristics include, whether or not it is seleceted, whether or not it has been explored
+
+  if (is3DMode)return explored3DColour;
+
   if (!tile.is_explored) {
-    return unexploredColour;
-  } else return exploredColour;
+    if (tile==tileArr.selected_tile){
+      return selectedColour
+    } else return unexploredColour
+  } 
+  return exploredColour;
 }
 
 
@@ -139,38 +147,86 @@ function findCentreOfShape(shape, T) {
 
 
 
-
-function isButtonActive(but) {
-  return but.elt.style.border.length > 0;
-}
-
-function setButtonActive(but, b) {
-  but.elt.style.border = b ? "3px solid black" : "";
-}
-
-
 function preload(){
   spriteSheet = loadImage('spritenew-min.png'); 
 }
-function toggleLeaderboard() {
-  if (!leaderboardVisible) {
-      let leaderboard = createDiv('');
-      leaderboard.id('leaderboard');
-      
-      // makes sure the aninm only starts after elt created
+
+function togglePanel(panelId) {
+  if (select('#' + panelId) === null) {
+      let panel = createDiv('');
+      panel.id(panelId);
+      //populate and slide in
+      if (panelId === 'leaderboard') {
+          populateLeaderboard(panel);
+      } else if (panelId === 'colour-selector') { 
+          populateColourSelect(panel);
+      }
+
       setTimeout(() => {
-          leaderboard.style('right', '0px');  // slide in 
+          panel.style('right', '0px');
       }, 10);
   } else {
-      // slide out
-      let board = select('#leaderboard');
-      board.style('right', '-300px');  
-      setTimeout(() => board.remove(), 300);  
+    //slide out and destroy panel
+      let panel = select('#' + panelId);
+      panel.style('right', '-500px');
+      setTimeout(() => panel.remove(), 300);
   }
-  
+}
+
+function toggleLeaderboard() {
+  togglePanel('leaderboard');
   leaderboardVisible = !leaderboardVisible;
   loop();
 }
+
+function toggleColourSelect() {
+  togglePanel('colour-selector');
+  colourSelectVisible = !colourSelectVisible;
+  loop();
+}
+
+function populateLeaderboard(panel) {
+  const scores = JSON.parse(localStorage.getItem('highScores')) || [];
+  scores.sort((a, b) => b - a);
+  scores.slice(0, 10).forEach((score, index) => {
+    createDiv(`${index + 1}. ${score}`).parent(panel);
+  });
+}
+function populateColourSelect(panel) {
+  const explored_picker = createColorPicker('#ffffff');
+  explored_picker.parent(panel);
+  
+  const explored_btn = createButton('Change Explored colour');
+  explored_btn.parent(panel);
+  explored_btn.mousePressed(() => {
+       exploredColour = explored_picker.color();
+  });
+
+  const unexplored_picker = createColorPicker('#ffffff');
+  unexplored_picker.parent(panel);
+  
+  const unexplored_btn = createButton('Change Unexplored colour');
+  unexplored_btn.parent(panel);
+
+  unexplored_btn.mousePressed(() => {
+      unexploredColour = unexplored_picker.color();
+  });
+
+  const toggle3DBtn = createButton('Toggle 3D Mode');
+  toggle3DBtn.parent(panel);
+  toggle3DBtn.mousePressed(() => {
+      is3DMode = !is3DMode;
+  });
+}
+
+function saveScore(score) {
+  let scores = JSON.parse(localStorage.getItem('highScores')) || [];
+  scores.push(score);
+  scores.sort((a, b) => b - a);
+  scores = scores.slice(0, 10);
+  localStorage.setItem('highScores', JSON.stringify(scores));
+}
+
 
 function setupHeader() {
   let header = createElement('div', '');
@@ -209,7 +265,7 @@ function setupHeader() {
 
   color_btn = createButton('Change Color Scheme');
   color_btn.mousePressed(() => {
-    showColourSelect();
+    toggleColourSelect();
   });
 
   
@@ -246,11 +302,13 @@ function setup() {
 
   black = color("black");
   red = color("red");
-  unexploredColour = color(189);
-  selectedColour = color(189);
-  exploredColour = color(189);
 
-  //setup top buttons 
+  explored3DColour = color(189);
+  unexploredColour = color(200,150,200);
+  selectedColour = color(230,200,230);
+  exploredColour = color(100,100,150);
+
+  //setup header buttons 
   setupHeader();
 
   radio = createRadio();
@@ -284,7 +342,9 @@ function draw() {
     if (tile.is_explored || tile == tileArr.selected_tile){
       drawShape(tile);
     } else {
+      if (is3DMode){
       drawShapeIMG(tile);
+      } else drawShape(tile);
     }
   }
 
@@ -302,7 +362,7 @@ function updateScore(newScore) {
   scoreDisplay.innerHTML = `Score: ${score}`; 
 }
 function isOnCanvas(x,y){
-  return (y<=(canvasHeight-headerHeight) && (x<=(canvasWidth-leaderboardWidth) || !leaderboardVisible))
+  return ((y>headerHeight) && (x<=(windowWidth-leaderboardWidth) || (!leaderboardVisible || !colourSelectVisible)))
 }
 
 
@@ -325,6 +385,9 @@ function windowResized() {
 }
 
 function mousePressed() {
+  console.log("mouse pt: "+ mouseX + " " + mouseY);
+  if (!isOnCanvas(mouseX, mouseY)) return;
+
   dragging = false;
   startMousePos = { x: mouseX, y: mouseY };
   
@@ -340,6 +403,8 @@ function mousePressed() {
 }
 
 function mouseDragged() {
+  if (!isOnCanvas(mouseX, mouseY)) return;
+
   const moveDistance = dist(mouseX, mouseY, startMousePos.x, startMousePos.y);
   const dragThreshold = 5;
   
@@ -363,6 +428,8 @@ function mouseDragged() {
 }
 
 function mouseReleased() {
+  if (!isOnCanvas(mouseX, mouseY)) return;
+
   if (selectedTile && !dragging) {
       tileArr.handleInteraction(selectedTile, flagMode);
   }
