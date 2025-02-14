@@ -2,6 +2,30 @@ const r3 = 1.7320508075688772;
 const hr3 = 0.8660254037844386;
 const ident = [1, 0, 0, 0, 1, 0];
 
+const local_hat_transforms = [[0.5,-hr3,3,hr3,1/2,2*hr3],[1/2,hr3,-3,-hr3,1/2,2*hr3],[-1/2,hr3,6,-hr3,-1/2,4*hr3],[-1/2,-hr3,3,hr3,-1/2,-6*hr3],[-1/2,hr3,6,-hr3,-1/2,0],[-1,0,0,0,-1,-4*hr3],[1,0,-3,0,-1,2*hr3],[-1/2,-hr3,-3,hr3,-1/2,-2*hr3],[1/2,hr3,-3,-hr3,-1/2,2*hr3],[-1/2,hr3,3,-hr3,-1/2,6*hr3],[-1,0,0,0,1,4*hr3],[-1/2,-hr3,0,-hr3,1/2,4*hr3],[1,0,3,0,-1,2*hr3],[1,0,0,0,1,-4*hr3]];
+const transformation_edge_fills = [[[7,8,9],[0,1,12]],[[0,1,12],[7,8,9]],[[7,8],[5,6]],[[3,4],[5,6]],[[5,6],[3,4]],[[2],[2]],[[0,10,11,12],[6,7,8,9]],[[1],[]],[[0,1,12],[7,8,9]],[[9,10,11],[6,7,8]],[[10,11],[1]],[[0,10,11,12],[2,3,4,5]],[[6,7,8,9],[0,10,11,12]],[[2,3,4],[9,10,11]]]
+//corresponding edges that a transformation coveres for both tiles
+
+
+
+const hat_outline = [
+  hexPt(0, 0),
+  hexPt(-1, -1),
+  hexPt(0, -2),
+  hexPt(2, -2),
+  hexPt(2, -1),
+  hexPt(4, -2),
+  hexPt(5, -1),
+  hexPt(4, 0),
+  hexPt(3, 0),
+  hexPt(2, 2),
+  hexPt(0, 3),
+  hexPt(0, 2),
+  hexPt(-1, 2),
+];
+
+
+
 function pt(x, y) {
   return { x: x, y: y };
 }
@@ -35,6 +59,24 @@ function mul(A, B) {
     A[3] * B[2] + A[4] * B[5] + A[5],
   ];
 }
+
+function matrixTo(A, B) {
+  const A_inv = inv([A[0], A[1], 0, A[3], A[4], 0]);
+  
+  const X_transform = mul([B[0], B[1], 0, B[3], B[4], 0], A_inv);
+  
+  const translation = transPt(A_inv, {
+      x: B[2] - A[2],
+      y: B[5] - A[5]
+  });
+  
+  return [
+      X_transform[0], X_transform[1], translation.x,
+      X_transform[3], X_transform[4], translation.y,
+      0, 0, 1
+  ].map(val => Math.round(val * 1e3) / 1e3);
+}
+
 
 function padd(p, q) {
   return { x: p.x + q.x, y: p.y + q.y };
@@ -89,19 +131,3 @@ function intersect(p1, q1, p2, q2) {
 
   return pt(p1.x + uA * (q1.x - p1.x), p1.y + uA * (q1.y - p1.y));
 }
-
-const hat_outline = [
-  hexPt(0, 0),
-  hexPt(-1, -1),
-  hexPt(0, -2),
-  hexPt(2, -2),
-  hexPt(2, -1),
-  hexPt(4, -2),
-  hexPt(5, -1),
-  hexPt(4, 0),
-  hexPt(3, 0),
-  hexPt(2, 2),
-  hexPt(0, 3),
-  hexPt(0, 2),
-  hexPt(-1, 2),
-];

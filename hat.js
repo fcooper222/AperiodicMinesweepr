@@ -8,6 +8,9 @@ let lw_scale = 1;
 let score;
 let tiles;
 let level;
+let n_tiles = [];
+
+
 
 let scale_centre;
 let scale_start;
@@ -87,7 +90,7 @@ function drawShapeIMG(tile) {
     tileIMG.height
   );
 }
-function drawShape(tile, debug = false) {
+function drawShape(tile, debug = true) {
   push();
   let colour = decideColour(tile);
 
@@ -111,41 +114,18 @@ function drawShape(tile, debug = false) {
   }
   if (debug == true) {
     // render hat centre pts and the adjaceny checking radii
+    let tileCentrePt = transPt(translation_vector, tile.centre);
     fill("red");
     noStroke();
     ellipse(
-      mul(translation_vector, tile.centre.x),
-      mul(translation_vector, tile.centre.y),
+      tileCentrePt.x,tileCentrePt.y,     
       5,
       5
     );
-
-    noFill();
-    stroke("black");
-    strokeWeight(1);
+    stroke("black")
   }
   pop();
 }
-
-function findCentreOfShape(shape, T) {
-  let tpts = [];
-  for (let p of shape) {
-    tpts.push(transPt(T, p)); // Add each transformed point to tpts
-  }
-  let sumX = 0;
-  let sumY = 0;
-
-  for (let pt of tpts) {
-    sumX += pt.x;
-    sumY += pt.y;
-  }
-
-  const cx = sumX / tpts.length;
-  const cy = sumY / tpts.length;
-  return pt(cx, cy);
-}
-
-
 
 function preload(){
   spriteSheet = loadImage('spritenew-min.png'); 
@@ -240,6 +220,7 @@ function setupHeader() {
     translation_vector = [1, 0, 0, 0, 1, 0];
     tileArr.changeSelected(null);
     tileArr.clear();
+    n_tiles=[];
     loop();
   });
 
@@ -249,8 +230,8 @@ function setupHeader() {
     const patch = constructPatch(...tiles);
     tiles = constructMetatiles(patch);
     const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
-    buildTileArray(tiles[idx], level);
-    print(tileArr.getTiles());
+    buildTileArray(tiles[1], level);
+    console.log(tileArr.hat_tiles.length);
     ++level;
     loop();
   });
@@ -274,12 +255,21 @@ function setupHeader() {
     toggleLeaderboard();
   });
 
+  build_n_btn = createButton('Build N');
+  build_n_btn.mousePressed(()=>{
+    let default_trans=[-10,0,20,0,10,0];
+    n_tiles = tileArr.buildNTiles(new Tile(findCentreOfShape(hat_outline,default_trans),default_trans));
+    console.log(n_tiles);
+  })
+
+
   // add bts to header
   reset_btn.parent(header);
   build_super_btn.parent(header);
   flag_btn.parent(header);
   color_btn.parent(header);
   leaderboard_btn.parent(header);
+  build_n_btn.parent(header);
 }
 
 
@@ -340,7 +330,7 @@ function draw() {
   );
   for (let tile of tilesOnCanvas) {
     if (tile.is_explored || tile == tileArr.selected_tile){
-      drawShape(tile);
+      drawShape(tile,true);
     } else {
       if (is3DMode){
       drawShapeIMG(tile);
@@ -385,7 +375,6 @@ function windowResized() {
 }
 
 function mousePressed() {
-  console.log("mouse pt: "+ mouseX + " " + mouseY);
   if (!isOnCanvas(mouseX, mouseY)) return;
 
   dragging = false;
@@ -393,6 +382,7 @@ function mousePressed() {
   
   let mousePt = translateMousePt(mouseX, mouseY);
   const closest = tileArr.findClosestTile(mousePt);
+  console.log(closest + "closest tile to mouse point x: " + +mousePt.x + " y: "+ mousePt.y);
   if (closest && !closest.is_explored) {
       selectedTile = closest;
       tileArr.changeSelected(closest);
@@ -431,6 +421,7 @@ function mouseReleased() {
   if (!isOnCanvas(mouseX, mouseY)) return;
 
   if (selectedTile && !dragging) {
+    console.log(selectedTile);
       tileArr.handleInteraction(selectedTile, flagMode);
   }
   

@@ -2,14 +2,20 @@ const distance_threshold = 0.01; // Adjust as needed
 const mine_frequency = 0.2;
 
 class Tile {
-  constructor(centre, trans) {
+  constructor(centre, trans,edge_tracking = false) {
     this.centre = centre;
     this.trans = trans;
-    this.is_mine = Math.random() < 0.2;
+    this.is_mine = Math.random() < mine_frequency;
     this.image_idx = selectImage(this.trans)
     this.is_explored = false;
     this.adjacency_number = null;
     this.flagged = false;
+  
+    if (edge_tracking){
+      //tile has 12 edges, initially set each to be 0, representign all edges have no matched tile
+      this.edges = [0,0,0,0,0,0,0,0,0,0,0,0];
+
+    };
   }
 
   setXPos(pos) {
@@ -34,10 +40,13 @@ class Tile {
 
 }
 
+
+
 class TileArray {
   constructor() {
     this.hat_tiles = [];
     this.flagged_tiles=[];
+    this.n_tiles=[];
     this.selected_tile = null;
     this.game_score = 0;
   }
@@ -48,19 +57,27 @@ class TileArray {
 
   }
 
-  add(tile) {
+  add(tile,arr=this.hat_tiles) {
     //instructive name, only used for calling binaryadd in a more memorable way
-    const index = this.binaryAdd(tile, this.hat_tiles);
-    this.hat_tiles.splice(index, 0, tile);
+    const index = this.binaryAdd(tile, arr);
+    arr.splice(index, 0, tile);
   }
 
-  binaryAdd(tile) {
+  remove(tile, arr=this.hat_tiles) {
+    const index = this.binaryFind(tile, arr);
+    
+    if (index !== -1) {
+        arr.splice(index, 1);
+    }
+}
+
+  binaryAdd(tile,arr=hat_tiles) {
     let low = 0;
-    let high = this.hat_tiles.length;
+    let high = arr.length;
 
     while (low < high) {
       const mid = Math.floor((low + high) / 2);
-      const comparison = this.compare(this.hat_tiles[mid], tile);
+      const comparison = this.compare(arr[mid], tile);
 
       if (comparison < 0) {
         low = mid + 1;
@@ -71,16 +88,125 @@ class TileArray {
     return low;
   }
 
-  //this method uses the spatial grid algorithm, copied from stack overflow to fit my specs, not sure exactly how it works yet but it does so i wont touch it.
-  findClosestTile(clickPt) {
-    let tcpt = clickPt;
-    let filtered_tiles = this.rangeSearch(
-      tcpt.x - 20,
-      tcpt.x + 20,
-      tcpt.y - 20,
-      tcpt.y + 20
-    );
+  binaryFind(tile, arr=this.hat_tiles) {
+    let low = 0;
+    let high = arr.length;
 
+    while (low < high) {
+        const mid = Math.floor((low + high) / 2);
+        const comparison = this.compare(arr[mid], tile);
+        
+        if (comparison === 0) {
+            // Found exact match
+            return mid;
+        } else if (comparison < 0) {
+            low = mid + 1;
+        } else {
+            high = mid;
+        }
+    }
+    
+    // Item not found
+    return -1;
+}
+
+
+
+  buildNRings(init_tile,rings=5){
+
+    let inner_tiles = []; //contains the inner tiles in the array that are always considered valid
+    let outer_tiles = [init_tile]; //contains the outer tiles in the array that are valid, yet should be added to
+    let new_outer_tiles = []; //array of the new tiles being added to the current outer tiles.
+    this.add(init_tile, outer_tiles);
+    console.log("added init tile to outer_tiles sorted arr");
+    for (let i;i<rings;i++){
+    while (outer_tiles.some(tile => tile.edges.includes(0))){
+      let outer_tile = this.getRandomOpenTile(outer_tiles)
+      let trans = this.chooseValidTransformTo(outer_tile);
+      let tempTrans = mul(outer_tile.trans,trans);
+      if (this.checkIfTileValid(tempTrans)){
+        //tile is valid, add it to the surrounding tiles.
+
+        //make new tile, then add it to the array
+
+        this.updateSurroundingEdges();
+      }
+    }
+
+    //all outer tiles have been covered;
+    inner_tiles.push(...outer_tiles);
+    outer_tiles = [...new_outer_tiles];
+    new_outer_tiles = [];
+  }
+
+  inner_tiles.push(...outer_tiles);
+
+  return inner_tiles;
+  }
+
+  buildNTiles(init_tile, rings=10) {
+    let n_tiles = [init_tile];
+    const usedTransforms = new Map();
+    usedTransforms.set(0, new Set());
+    console.log("reach here");
+    while (n_tiles.length < n) {
+        const randomTileIndex = Math.floor(Math.random() * n_tiles.length);
+        const selectedTile = n_tiles[randomTileIndex];
+        let validTransformFound = false;
+ 
+        if (!usedTransforms.has(randomTileIndex)) {
+            usedTransforms.set(randomTileIndex, new Set());
+        }
+ 
+        const indices = Array.from({length: local_hat_transforms.length}, (_, i) => i)
+            .filter(i => !usedTransforms.get(randomTileIndex).has(i));
+        
+        for (const transformIndex of indices) {
+            const transform = local_hat_transforms[transformIndex];
+            let newTrans = mul(selectedTile.trans, transform);
+            let newCentre = findCentreOfShape(hat_outline, newTrans);
+            let isValid = true;
+ 
+            let nearby_tiles = this.rangeSearch(newCentre.x-10000, newCentre.x+10000, 
+                                              newCentre.y-10000, newCentre.y+10000, n_tiles);
+ 
+            for (const existingTile of nearby_tiles) {
+                let distance = Math.hypot(existingTile.centre.x - newCentre.x, 
+                                        existingTile.centre.y - newCentre.y);
+                if (distance < 50 || this.checkForOverlap(existingTile.trans, newTrans)) {
+                    isValid = false;
+                    break;
+                }
+            }
+ 
+            if (isValid) {
+                n_tiles.push(new Tile(newCentre, newTrans));
+                usedTransforms.get(randomTileIndex).add(transformIndex);
+                validTransformFound = true;
+                break;
+            }
+        }
+ 
+        if (!validTransformFound && usedTransforms.get(randomTileIndex).size === local_hat_transforms.length) {
+            n_tiles.splice(randomTileIndex, 1);
+            usedTransforms.delete(randomTileIndex);
+        }
+    }
+    return n_tiles;
+ }
+
+  //this method uses the spatial grid algorithm, copied from stack overflow to fit my specs, not sure exactly how it works yet but it does so i wont touch it.
+  findClosestTile(clickPt,arr=this.hat_tiles) {
+    let tcpt = clickPt;
+    console.log(" function called clicked here x: " + tcpt.x + " y: "+ tcpt.y);
+    console.log("checking array " + arr);
+    let filtered_tiles = this.rangeSearch(
+      tcpt.x - 200,
+      tcpt.x + 200,
+      tcpt.y - 200,
+      tcpt.y + 200,arr
+    );
+    console.log(filtered_tiles.length + " range search returned these.");
     let closest = null;
     let mdist = Infinity;
     for (let tile of filtered_tiles) {
@@ -168,14 +294,14 @@ class TileArray {
     return out_tiles;
   }
 
-  firstInRange(xMin) {
+  firstInRange(xMin,arr=this.hat_tiles) {
     let low = 0;
-    let high = this.hat_tiles.length;
+    let high = arr.length;
     let operation_count = 0;
 
     while (low < high) {
       const mid = Math.floor((low + high) / 2);
-      const tile = this.hat_tiles[mid];
+      const tile = arr[mid];
 
       const transformedCentre = transPt(translation_vector, tile.centre);
 
@@ -235,12 +361,12 @@ class TileArray {
     console.log("BOOOOM!");
   }
   // find first tile within a ceratin range using a binary search, then linear add all of the tiles in the range until no more can be.
-  rangeSearch(xMin, xMax, yMin, yMax) {
+  rangeSearch(xMin, xMax, yMin, yMax,arr=this.hat_tiles) {
     const result = [];
-    let startIndex = this.firstInRange(xMin);
+    let startIndex = this.firstInRange(xMin,arr);
 
-    for (let i = startIndex; i < this.hat_tiles.length; i++) {
-      const tile = this.hat_tiles[i];
+    for (let i = startIndex; i < arr.length; i++) {
+      const tile = arr[i];
 
       const transformedCentre = transPt(translation_vector, tile.centre);
 
@@ -255,6 +381,8 @@ class TileArray {
 
     return result;
   }
+
+  
 
   compare(tile1, tile2) {
     if (tile1.centre.x === tile2.centre.x) {

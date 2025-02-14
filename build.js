@@ -43,43 +43,6 @@ class HatTile {
       this.y = pos;
     }
   
-    resetSVG() {
-      this.svg_id = null;
-    }
-  
-    buildSVGDefs(stream, sc) {
-      if (this.svg_id != null) {
-        return;
-      }
-  
-      this.svg_id = getSVGID();
-      stream.push(
-        polygonToSVG(
-          hat_outline,
-          this.svg_id,
-          cols[this.label].color(),
-          black,
-          lw_scale / sc
-        )
-      );
-    }
-  
-    getSVGStrokeID() {
-      return null;
-    }
-  
-    getSVGFillID() {
-      return this.svg_id;
-    }
-  
-    getText(stream, T) {
-      // Write out the top two rows of an affine transformation matrix
-      // giving the location of this hat, together with the type of
-      // this tile.
-      stream.push(
-        `${this.label} ${T[0]} ${T[1]} ${T[2]} ${T[3]} ${T[4]} ${T[5]}`
-      );
-    }
   }
   
   // A group that collects a list of transformed children and an outline
@@ -129,11 +92,7 @@ class HatTile {
         ch.T = mul(M, ch.T);
       }
     }
-    getText(stream, T) {
-      for (let g of this.children) {
-        g.geom.getText(stream, mul(T, g.T));
-      }
-    }
+
   }
 
 function buildTileArray(tile_tree, level) {
