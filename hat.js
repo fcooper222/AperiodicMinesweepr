@@ -255,10 +255,10 @@ function setupHeader() {
     toggleLeaderboard();
   });
 
-  build_n_btn = createButton('Build N');
+  build_n_btn = createButton('Build N Rings');
   build_n_btn.mousePressed(()=>{
     let default_trans=[-10,0,20,0,10,0];
-    n_tiles = tileArr.buildNTiles(new Tile(findCentreOfShape(hat_outline,default_trans),default_trans));
+    n_tiles = ringBuilder.buildNRings(new Tile(findCentreOfShape(hat_outline,default_trans),default_trans));
   })
 
 
@@ -278,6 +278,8 @@ function setupHeader() {
 
 function setup() {
   tileArr = new TileArray();
+
+  ringBuilder = new RingBuilder(5);
   loadGraphics();
   windowWidth, windowHeight;
   const canvasWidth = windowWidth * width_ratio;

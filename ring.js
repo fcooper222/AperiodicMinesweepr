@@ -7,14 +7,14 @@ class RingBuilder{
     }
 
 
-    buildNRings(){
+    buildNRings(init_tile){
         //build the array of Nrings
         let inner_tiles = []; //contains the inner tiles in the array that are always considered valid
         let outer_tiles = [init_tile]; //contains the outer tiles in the array that are valid, yet should be added to
         let new_outer_tiles = []; //array of the new tiles being added to the current outer tiles.
         this.tiles.add(init_tile);
         console.log("added init tile to outer_tiles sorted arr");
-        for (let i;i<rings;i++){
+        for (let i;i<this.n_rings;i++){
             while (outer_tiles.some(tile => tile.edges.includes(0))){
             let outer_tile = this.getRandomOpenTile(outer_tiles); // choose one of the tiles on the edge that has an open edge.
             let trans = this.chooseValidTransformTo(outer_tile); // find valid transform given a tiles currently open edges
@@ -32,7 +32,7 @@ class RingBuilder{
                     let tempCentre = findCentreOfShape(hat_outline,placement);
                     let new_tile = new Tile(tempCentre,tempTrans,true);
                     this.tiles.add(new_tile);
-
+                    console.log("adding tile" + new_tile);
                     //
                     new_outer_tiles.push(new_tile); //used for the rings
                     //make new tile, then add it to the array
@@ -52,7 +52,7 @@ class RingBuilder{
             outer_tiles=new_outer_tiles;
             new_outer_tiles=[];
         }
-
+        
 
     }
 
