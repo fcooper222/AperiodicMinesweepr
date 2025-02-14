@@ -41,7 +41,7 @@ let box_height = 10;
 
 let height_ratio = 1;
 let width_ratio = 1;
-let adjaceny_radius = 56;
+let adjacency_radius = 56;
 
 let svg_serial = 0;
 let scoreDisplay;
@@ -90,7 +90,7 @@ function drawShapeIMG(tile) {
     tileIMG.height
   );
 }
-function drawShape(tile, debug = true) {
+function drawShape(tile, debug = false) {
   push();
   let colour = decideColour(tile);
 
@@ -113,7 +113,7 @@ function drawShape(tile, debug = true) {
     text(tile.adjacency_number, tc.x, tc.y);
   }
   if (debug == true) {
-    // render hat centre pts and the adjaceny checking radii
+    // render hat centre pts and the adjacency checking radii
     let tileCentrePt = transPt(translation_vector, tile.centre);
     fill("red");
     noStroke();
@@ -128,7 +128,7 @@ function drawShape(tile, debug = true) {
 }
 
 function preload(){
-  spriteSheet = loadImage('spritenew-min.png'); 
+  spriteSheet = loadImage('sprite.png'); 
 }
 
 function togglePanel(panelId) {
@@ -259,7 +259,6 @@ function setupHeader() {
   build_n_btn.mousePressed(()=>{
     let default_trans=[-10,0,20,0,10,0];
     n_tiles = tileArr.buildNTiles(new Tile(findCentreOfShape(hat_outline,default_trans),default_trans));
-    console.log(n_tiles);
   })
 
 
@@ -323,14 +322,14 @@ function draw() {
     drawShape(tileArr.selected_tile);
   }
   let tilesOnCanvas = tileArr.rangeSearch(
-    -windowWidth,
-    windowWidth,
-    -windowHeight,
-    windowHeight
+    -windowWidth / 2,
+    windowWidth / 2,
+    -windowHeight / 2,
+    windowHeight / 2
   );
   for (let tile of tilesOnCanvas) {
     if (tile.is_explored || tile == tileArr.selected_tile){
-      drawShape(tile,true);
+      drawShape(tile);
     } else {
       if (is3DMode){
       drawShapeIMG(tile);

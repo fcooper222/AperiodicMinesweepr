@@ -198,15 +198,12 @@ class TileArray {
   //this method uses the spatial grid algorithm, copied from stack overflow to fit my specs, not sure exactly how it works yet but it does so i wont touch it.
   findClosestTile(clickPt,arr=this.hat_tiles) {
     let tcpt = clickPt;
-    console.log(" function called clicked here x: " + tcpt.x + " y: "+ tcpt.y);
-    console.log("checking array " + arr);
     let filtered_tiles = this.rangeSearch(
-      tcpt.x - 200,
-      tcpt.x + 200,
-      tcpt.y - 200,
-      tcpt.y + 200,arr
+      tcpt.x - 60,
+      tcpt.x + 60,
+      tcpt.y - 60,
+      tcpt.y + 60,arr
     );
-    console.log(filtered_tiles.length + " range search returned these.");
     let closest = null;
     let mdist = Infinity;
     for (let tile of filtered_tiles) {
@@ -272,10 +269,10 @@ class TileArray {
   findAdjacentTo(tile) {
     let c = transPt(translation_vector, tile.centre);
     let adjacent_tiles = this.rangeSearch(
-      c.x - adjaceny_radius,
-      c.x + adjaceny_radius,
-      c.y - adjaceny_radius,
-      c.y + adjaceny_radius
+      c.x - adjacency_radius,
+      c.x + adjacency_radius,
+      c.y - adjacency_radius,
+      c.y + adjacency_radius
     );
     //set of current hat pts
     let baseHatPts = hat_outline.map((p) =>
