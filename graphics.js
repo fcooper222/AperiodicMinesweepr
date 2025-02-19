@@ -1,22 +1,27 @@
 //loads each elt in the sprite sheet and puts it in the array :)
 const float_threshold = 0.001 // just incase we get very small floating point numbers that mess up checks for the transformaiton orientation
-let spriteImages = [];
+let spriteImages3D = [];
+let spriteImages2D = [];
 let flagSprite; 
 let mineSprite;
 
 function loadGraphics() {
-    spriteSheet.loadPixels();
-
+    //1 off set to remove the black border, each square is thus 99x99
+    spriteSheet3D.loadPixels();
+    spriteSheet2D.loadPixels();
     for (let i = 0; i < 7; i++) {
-      spriteImages.push(spriteSheet.get(i * 100, 0, 100, 100));
+        spriteImages3D.push(spriteSheet3D.get(2 + i * 100, 2, 97, 97));
+        spriteImages2D.push(spriteSheet2D.get(2 + i * 100, 2, 97, 97));
+
     }
     for (let i = 0; i < 7; i++) {
-      spriteImages.push(spriteSheet.get(i * 100, 100, 100, 100));
-    }
+        spriteImages3D.push(spriteSheet3D.get(2 + i * 100, 102, 97, 97));
+        spriteImages2D.push(spriteSheet2D.get(2 + i * 100, 102, 97, 97));
 
-    flagSprite=spriteImages[13];
-    mineSprite=spriteImages[6];
-  }
+    }
+    flagSprite = spriteImages3D[13];
+    mineSprite = spriteImages3D[6];
+}
 
 
 

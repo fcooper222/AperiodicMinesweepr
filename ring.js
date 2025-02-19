@@ -7,19 +7,19 @@ class RingBuilder{
     }
 
 
-    buildNRings(init_tile){
+    buildNRings(init_tile,n=5){
         //build the array of Nrings
-        let inner_tiles = []; //contains the inner tiles in the array that are always considered valid
         let outer_tiles = [init_tile]; //contains the outer tiles in the array that are valid, yet should be added to
         let new_outer_tiles = []; //array of the new tiles being added to the current outer tiles.
         this.tiles.add(init_tile);
         console.log("added init tile to outer_tiles sorted arr");
-        for (let i;i<this.n_rings;i++){
+        for (let i=0;i<n;i++){
+            console.log(outer_tiles + "fnusi");
             while (outer_tiles.some(tile => tile.edges.includes(0))){
             let outer_tile = this.getRandomOpenTile(outer_tiles); // choose one of the tiles on the edge that has an open edge.
             let trans = this.chooseValidTransformTo(outer_tile); // find valid transform given a tiles currently open edges
 
-
+            console.log("making new trans matr" + trans);
             if (trans){
                 //means there is still a valid transform to add to the hat.
             
@@ -27,9 +27,9 @@ class RingBuilder{
 
 
                 //check the surrounding hats to see if any of them overlap, if none overlap then we should place it down.
-                if (this.checkIfPlacementValid(tempTrans)){
+                if (this.checkIfPlacementValid(tempTrans,outer_tiles)){
                     //tile is valid, add it to the surrounding tiles.
-                    let tempCentre = findCentreOfShape(hat_outline,placement);
+                    let tempCentre = findCentreOfShape(hat_outline,tempTrans);
                     let new_tile = new Tile(tempCentre,tempTrans,true);
                     this.tiles.add(new_tile);
                     console.log("adding tile" + new_tile);
@@ -37,7 +37,7 @@ class RingBuilder{
                     new_outer_tiles.push(new_tile); //used for the rings
                     //make new tile, then add it to the array
             
-                    this.updateSurroundingTileEdges();
+                    this.updateSurroundingTileEdges(new_tile);
                 }
             } else {
                 //means there is no valid tile that can be added to this outer tile, i.e we need to back track.
@@ -56,44 +56,52 @@ class RingBuilder{
 
     }
 
-    handleBacktrack(tile){
+    handleBacktrack(tile,outer_tiles,new_outer_tiles){
         
         this.removeNeighboursFrom(tile);
 
-        let inner_neighbours = this.findInnerNeighbours(tile);
-        for (let inner_neighbour of inner_neighbours){
-            this.removeNeighboursFrom(inner_neighbour);
+        let inner_neighbours = this.findInnerNeighbours(tile,outer_tiles);
+        if (inner_neighbours){
+            for (let inner_neighbour of inner_neighbours){
+                this.removeNeighboursFrom(inner_neighbour,new_outer_tiles);
+            }
         }
     }
 
-    findInnerNeighbours(tile){
+    findInnerNeighbours(tile,outer_tiles){
         let out = [];
-        for (let neighbour of outer_tiles){
-            if (this.checkIfConnected(tile,neighbour)){
-                out.push(neighbour);
+
+        if (outer_tiles){
+            for (let neighbour of outer_tiles){
+                if (this.checkIfConnected(tile,neighbour)){
+                    out.push(neighbour);
+                }
             }
         }
         return out;
     }
-    findOuterNeighbours(tile){
+    findOuterNeighbours(tile,new_outer_tiles){
         let out = [];
-        for (let neighbour of new_outer_tiles){
-            if (this.checkIfConnected(tile,neighbour)){
-                out.push(neighbour);
+        if (new_outer_tiles){
+            for (let neighbour of new_outer_tiles){
+                if (this.checkIfConnected(tile,neighbour)){
+                    out.push(neighbour);
+                }
             }
         }
         return out;
     }
 
-    removeNeighboursFrom(tile){
-        let tiles_to_remove = this.findOuterNeighbours(tile);
-
-        for (let tile of tiles_to_remove){
-            this.removeTile(tile);
+    removeNeighboursFrom(tile,new_outer_tiles){
+        let tiles_to_remove = this.findOuterNeighbours(tile,new_outer_tiles);
+        if (this.tiles_to_remove){
+            for (let tile of tiles_to_remove){
+                this.removeTile(tile,new_outer_tiles);
+            }
         }
     }
 
-    removeTile(tile){
+    removeTile(tile,new_outer_tiles){
         //remove tile from new_outer_tiles
 
         //convert all surrounding edge values to 0 to account for them now being opened
@@ -136,7 +144,7 @@ class RingBuilder{
 
     updateSurroundingTileEdges(new_tile,remove_bool=false){
         //adding new tile to local area
-        let local_tiles = this.tiles.rangeSearch(tempCentre.x-70,tempCentre.x+70,tempCentre.y-70,tempCentre.y+70);
+        let local_tiles = this.tiles.rangeSearch(new_tile.centre.x-70,new_tile.centre.x+70,new_tile.centre.y-70,new_tile.centre.y+70);
         //find the transformation of the differences between each tiles
     
         for (let local_tile of local_tiles){
@@ -206,12 +214,12 @@ class RingBuilder{
         return false;
     }
 
-    checkIfPlacementValid(placement){
+    checkIfPlacementValid(placement,outer_tiles){
         //checks for overlaps in the local area.
         //do range search to get local tiles.
         //check each local tile against this transformation to see if there is overlap
         let tempCentre = findCentreOfShape(hat_outline,placement);
-        let local_tiles = this.rangeSearch(tempCentre.x-70,tempCentre.x+70,tempCentre.y-70,tempCentre.y+70,outer_tiles);
+        let local_tiles = this.tiles.rangeSearch(tempCentre.x-70,tempCentre.x+70,tempCentre.y-70,tempCentre.y+70,outer_tiles);
         for (let tile of local_tiles){
           if (this.checkForOverlap(this.convertTransToEdges(tile.trans,placement))){
             return false;

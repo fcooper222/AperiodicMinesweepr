@@ -49,6 +49,7 @@ class TileArray {
     this.n_tiles=[];
     this.selected_tile = null;
     this.game_score = 0;
+    this.flagged_mines = 0;
   }
 
   changeSelected(tile) {
@@ -318,12 +319,19 @@ class TileArray {
       if (tile.flagged){
         //remove from array
         this.flagged_tiles = this.flagged_tiles.filter(flaggedTile => flaggedTile !== tile);
+        if (tile.is_mine){
+          this.flagged_mines--;
+        }
       } else {
         //add to array.
         this.flagged_tiles.push(tile)
+        if (tile.is_mine){
+          this.flagged_mines++;
+        }
       }
 
       tile.changeFlagged();
+      console.log("mines flagged is ", this.flagged_mines);
     } else {
       // first of all check if tile is a mine
       if (!tile.flagged){
@@ -355,7 +363,9 @@ class TileArray {
   mineTriggered() {
     //function that is called when a mine is stepped on
 
-    console.log("BOOOOM!");
+    console.log("BOOOOM! cleared: " + this.flagged_mines);
+    
+    handleGameOver(this.flagged_mines);
   }
   // find first tile within a ceratin range using a binary search, then linear add all of the tiles in the range until no more can be.
   rangeSearch(xMin, xMax, yMin, yMax,arr=this.hat_tiles) {
@@ -395,5 +405,6 @@ class TileArray {
   clear() {
     this.hat_tiles = [];
     this.flagged_tiles=[];
+    this.flagged_mines = 0;
   }
 }
