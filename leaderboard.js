@@ -74,7 +74,6 @@ function updateLeaderboard() {
             entry.minesFlagged.toString(),   
             timeFormatted                    
           ];
-          console.log(values);
           items.forEach((item, i) => {
             if (item && values[i] !== undefined) {
               item.html(values[i]);

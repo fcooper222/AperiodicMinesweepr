@@ -277,8 +277,8 @@ function stopTimer() {
 
 function resetTimer() {
   start_time = millis();
+  score=0;
 }
-
 function startTimer(){
   isGameRunning = true;
 }
