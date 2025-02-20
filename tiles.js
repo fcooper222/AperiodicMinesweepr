@@ -55,7 +55,6 @@ class TileArray {
   changeSelected(tile) {
     //set new tile to be selected and remove old tile here
     this.selected_tile=tile;
-
   }
 
   add(tile,arr=this.hat_tiles) {
@@ -70,7 +69,10 @@ class TileArray {
     if (index !== -1) {
         arr.splice(index, 1);
     }
-}
+  }
+  setDifficulty(difficulty){
+    
+  }
 
   binaryAdd(tile,arr=hat_tiles) {
     let low = 0;

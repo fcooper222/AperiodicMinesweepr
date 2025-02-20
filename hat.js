@@ -303,17 +303,21 @@ function setupHeader() {
     loop();
   });
 
-  build_super_btn = createButton('Build Supertiles');
+  build_super_btn = createButton('Start Game');
 
   build_super_btn.mousePressed(() => {
-    const patch = constructPatch(...tiles);
-    tiles = constructMetatiles(patch);
-    const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
-    buildTileArray(tiles[0], level);
-    ++level;
-    resetTimer();
-    startTimer();
-    loop();
+    if (!isGameRunning){
+      for (let i =0;i<5;i++){
+        const patch = constructPatch(...tiles);
+        tiles = constructMetatiles(patch);
+        const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
+        buildTileArray(tiles[0], level);
+        ++level;
+      }
+      resetTimer();
+      startTimer();
+      loop();
+    }
   });
 
   score_display = createElement('div', `Score: ${score}`);
