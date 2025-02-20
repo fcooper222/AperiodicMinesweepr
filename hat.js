@@ -310,7 +310,6 @@ function setupHeader() {
     tiles = constructMetatiles(patch);
     const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
     buildTileArray(tiles[0], level);
-    console.log(tileArr.hat_tiles.length);
     ++level;
     resetTimer();
     startTimer();
@@ -493,7 +492,6 @@ function draw() {
 }
 
 function updateScore(newScore) {
-  console.log("new score!!!" + newScore);
   score = newScore; 
   score_display.html(`Score: ${score}`);
 }
@@ -514,7 +512,6 @@ function windowResized() {
   const canvasWidth = windowWidth * width_ratio;
   const canvasHeight = windowHeight * height_ratio;
   resizeCanvas(canvasWidth, canvasHeight);
-  console.log("resize");
 }
 
 function mousePressed() {
@@ -525,7 +522,6 @@ function mousePressed() {
   
   let mousePt = translateMousePt(mouseX, mouseY);
   const closest = tileArr.findClosestTile(mousePt);
-  console.log(closest + "closest tile to mouse point x: " + +mousePt.x + " y: "+ mousePt.y);
   if (closest && !closest.is_explored) {
       selectedTile = closest;
       tileArr.changeSelected(closest);
@@ -564,7 +560,6 @@ function mouseReleased() {
   if (!isOnCanvas(mouseX, mouseY) || !isGameRunning) return;
 
   if (selectedTile && !dragging) {
-    console.log(selectedTile);
     if (mouseButton === LEFT) {
       tileArr.handleInteraction(selectedTile, false);  // Normal mode
   } else if (mouseButton === RIGHT) {

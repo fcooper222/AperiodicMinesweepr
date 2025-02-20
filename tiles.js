@@ -119,7 +119,6 @@ class TileArray {
     let outer_tiles = [init_tile]; //contains the outer tiles in the array that are valid, yet should be added to
     let new_outer_tiles = []; //array of the new tiles being added to the current outer tiles.
     this.add(init_tile, outer_tiles);
-    console.log("added init tile to outer_tiles sorted arr");
     for (let i;i<rings;i++){
     while (outer_tiles.some(tile => tile.edges.includes(0))){
       let outer_tile = this.getRandomOpenTile(outer_tiles)
@@ -149,7 +148,6 @@ class TileArray {
     let n_tiles = [init_tile];
     const usedTransforms = new Map();
     usedTransforms.set(0, new Set());
-    console.log("reach here");
     while (n_tiles.length < n) {
         const randomTileIndex = Math.floor(Math.random() * n_tiles.length);
         const selectedTile = n_tiles[randomTileIndex];
@@ -331,7 +329,6 @@ class TileArray {
       }
 
       tile.changeFlagged();
-      console.log("mines flagged is ", this.flagged_mines);
     } else {
       // first of all check if tile is a mine
       if (!tile.flagged){
@@ -354,7 +351,6 @@ class TileArray {
         } else {
           //mines around current tile
           tile.explore(mineCount);
-          console.log("mine");
         }
       }
     }
@@ -363,7 +359,6 @@ class TileArray {
   mineTriggered() {
     //function that is called when a mine is stepped on
 
-    console.log("BOOOOM! cleared: " + this.flagged_mines);
     
     handleGameOver(this.flagged_mines);
   }
