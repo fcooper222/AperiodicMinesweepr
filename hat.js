@@ -499,11 +499,14 @@ function updateScore(newScore) {
   score = newScore; 
   score_display.html(`Score: ${score}`);
 }
-function isOnCanvas(x,y){
-  return ((y>headerHeight) && (x<=(windowWidth-leaderboardWidth) || (!leaderboardVisible || !colourSelectVisible)))
+function isOnCanvas(x, y) {
+  return (
+    x >= 0 && 
+    x <= width && 
+    y >= 0 && 
+    y <= height  
+  );
 }
-
-
 function translateMousePt(x,y){
   const newPt = {
     x: x - width / 2,
@@ -513,11 +516,10 @@ function translateMousePt(x,y){
 }
 
 function windowResized() {
-  const canvasWidth = windowWidth * width_ratio;
-  const canvasHeight = windowHeight * height_ratio;
+  const canvasWidth = (windowWidth - 600) * width_ratio;
+  const canvasHeight = (windowHeight - 150) * height_ratio;
   resizeCanvas(canvasWidth, canvasHeight);
 }
-
 function mousePressed() {
   if (!isOnCanvas(mouseX, mouseY) || !isGameRunning) return;
 
