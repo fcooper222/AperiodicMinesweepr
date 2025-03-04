@@ -40,8 +40,6 @@ let startMousePos = null;
 
 let flagMode = false;
 let dragging = false;
-let leaderboardVisible = false;
-let colourSelectVisible = false;
 let firstGridClick = false;
 let isGameRunning = false;
 let is3DMode = false;
@@ -262,6 +260,59 @@ function populateColourSelect(panel) {
   toggle3DBtn.parent(panel);
   toggle3DBtn.mousePressed(() => {
       is3DMode = !is3DMode;
+  });
+
+  const spacer = createDiv();
+  spacer.parent(panel);
+  spacer.style('height', '50px');
+  
+  // Add preset section title
+  const preset_title = createDiv('Select preset colour scheme');
+  preset_title.parent(panel);
+  preset_title.class('preset-title');
+  
+  // Jungle preset button
+  const jungle_btn = createButton('Jungle');
+  jungle_btn.parent(panel);
+  jungle_btn.mousePressed(() => {
+    explored_picker.value('#228B22');    
+    unexplored_picker.value('#006400');  
+    exploredColour = explored_picker.color();
+    unexploredColour = unexplored_picker.color();
+    changeButtonColour();
+  });
+  
+  // Desert preset button
+  const desert_btn = createButton('Desert');
+  desert_btn.parent(panel);
+  desert_btn.mousePressed(() => {
+    explored_picker.value('#D2B48C');    
+    unexplored_picker.value('#F4A460');  
+    exploredColour = explored_picker.color();
+    unexploredColour = unexplored_picker.color();
+    changeButtonColour();
+  });
+  
+  // Ocean preset button
+  const ocean_btn = createButton('Ocean');
+  ocean_btn.parent(panel);
+  ocean_btn.mousePressed(() => {
+    explored_picker.value('#006994');    
+    unexplored_picker.value('#40A4DF');  
+    exploredColour = explored_picker.color();
+    unexploredColour = unexplored_picker.color();
+    changeButtonColour();
+  });
+  
+  // Mars preset button
+  const mars_btn = createButton('Mars');
+  mars_btn.parent(panel);
+  mars_btn.mousePressed(() => {
+    explored_picker.value('#C1440E');    
+    unexplored_picker.value('#964B00'); 
+    exploredColour = explored_picker.color();
+    unexploredColour = unexplored_picker.color();
+    changeButtonColour();
   });
 }
 

@@ -10,8 +10,8 @@ function setupLeaderboard() {
     title.parent(container);
     title.class('leaderboard-title');
     
-    // Create empty cards for the top 10 spots
-    for(let i = 0; i < 10; i++) {
+    // Create empty cards for the top 8 spots
+    for(let i = 0; i < 8; i++) {
       const card = createDiv('');
       card.parent(container);
       card.class('card');
@@ -32,7 +32,6 @@ function setupLeaderboard() {
       rightCol.parent(cardData);
       rightCol.class('card__left');
       
-      // Modified labels - only 3 items now
       const leftLabels = ['Score', 'Mines Flagged', 'Time'];
       leftLabels.forEach(label => {
         const item = createDiv(label);
@@ -40,7 +39,6 @@ function setupLeaderboard() {
         item.class('item');
       });
       
-      // Modified default values - only 3 items now
       const rightValues = ['--', '--', '--:--'];
       rightValues.forEach(value => {
         const item = createDiv(value);
@@ -58,8 +56,8 @@ function updateLeaderboard() {
     //get all cards to update
     const cards = selectAll('.card');
     
-    // only display first 10 elements
-    entries.slice(0, 10).forEach((entry, index) => {
+    // only display top 8 elements
+    entries.slice(0, 8).forEach((entry, index) => {
       if (cards[index]) {
         const rightCol = select('.card__left', cards[index]);
         if (rightCol) {
