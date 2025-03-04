@@ -1,0 +1,11 @@
+{
+  "name": "aperiodic-minesweeper",
+  "version": "1.0.0",
+  "description": "Minesweeper game on an aperiodic monotile",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.x.x"
+  }
+}
