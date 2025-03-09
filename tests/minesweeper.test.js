@@ -1,39 +1,14 @@
+const { Tile, TileArray } = require('../src/tiles.js');
+const { decideColour } = require('../src/hat.js');
+const { transPt } = require('../src/geometry.js');
+
+
 beforeEach(() => {
-    // Setup global variables and mocks
-    global.isGameRunning = true;
-    // global.is3DMode = false;
-    // global.exploredColour = 'white';
-    // global.unexploredColour = 'gray';
-    // global.selectedColour = 'blue';
-    // global.score = 0;
-    // global.translation_vector = [1, 0, 0, 0, 1, 0];
-    // global.hat_outline = [
-    //   {x: 0, y: 0},
-    //   {x: 10, y: 0},
-    //   {x: 10, y: 10},
-    //   {x: 0, y: 10}
-    // ];
-    // global.adjacency_radius = 56;
-    
-    // // Mock utility functions
-    // global.transPt = jest.fn((trans, pt) => ({
-    //   x: pt.x,
-    //   y: pt.y
-    // }));
-    
-    // global.mul = jest.fn((a, b) => b);
-    
-    // global.updateScore = jest.fn();
-    // global.handleGameOver = jest.fn();
-    
-    // // Mock canvas functions
-    // global.beginShape = jest.fn();
-    // global.endShape = jest.fn();
-    // global.vertex = jest.fn();
-    // global.fill = jest.fn();
-    // global.stroke = jest.fn();
-    // global.strokeWeight = jest.fn();
-  });
+  // Reset all mocks before each test
+  jest.clearAllMocks();
+  
+
+});
   
   describe('Tile Class', () => {
     test('constructor initializes properties correctly', () => {
@@ -41,9 +16,7 @@ beforeEach(() => {
       const trans = [1, 0, 0, 0, 1, 0];
       const label = 'testTile';
       
-      // Mock Math.random to return a fixed value
-      const originalRandom = Math.random;
-      Math.random = jest.fn(() => 0.1); // Below mine frequency
+  
       
       // Mock selectImage function
       global.selectImage = jest.fn(() => 0);
@@ -58,8 +31,6 @@ beforeEach(() => {
       expect(tile.adjacency_number).toBeNull();
       expect(tile.flagged).toBe(false);
       
-      // Restore original Math.random
-      Math.random = originalRandom;
     });
     
     test('explore method sets tile as explored', () => {
@@ -112,13 +83,11 @@ beforeEach(() => {
       const tileArray = new TileArray();
       const tile = new Tile({ x: 100, y: 100 }, [1, 0, 0, 0, 1, 0], 'testTile');
       
-      // Mock binaryFind to return a specific index
+      // Mock binaryFind to return a index 1
       tileArray.binaryFind = jest.fn(() => 0);
       
-      // Add tile first
       tileArray.hat_tiles.push(tile);
       
-      // Remove the tile
       tileArray.remove(tile);
       
       expect(tileArray.binaryFind).toHaveBeenCalledWith(tile, tileArray.hat_tiles);
@@ -182,14 +151,16 @@ beforeEach(() => {
       const tileArray = new TileArray();
       const tile1 = new Tile({ x: 100, y: 100 }, [1, 0, 0, 0, 1, 0], 'H1');
       const tile2 = new Tile({ x: 200, y: 200 }, [1, 0, 0, 0, 1, 0], 'H2');
-      
+      tileArray.add(tile1);
+      tileArray.add(tile2);
       // Mock rangeSearch to return our test tiles
+      global.translation_vector = [1,0,0,0,1,0];
+
       tileArray.rangeSearch = jest.fn(() => [tile1, tile2]);
-      
-      const result = tileArray.findClosestTile({ x: 120, y: 120 });
+      const result = tileArray.findClosestTile({ x: 110, y: 110 });
       
       expect(tileArray.rangeSearch).toHaveBeenCalled();
-      expect(result).toBe(tile1); // tile1 is closer to (120, 120)
+      expect(result).toBe(tile1); // tile1 is closer to (110, 110)
     });
     
     test('clear method resets arrays', () => {
@@ -212,12 +183,10 @@ beforeEach(() => {
       test('decideColour returns correct color based on tile state', () => {
         const tileArr = new TileArray();
         const exploredTile = new Tile({ x: 100, y: 100 }, [1, 0, 0, 0, 1, 0], 'explored');
-        const unexploredTile = new Tile({ x: 200, y: 200 }, [1, 0, 0, 0, 1, 0], 'unexplored');
-        const selectedTile = new Tile({ x: 300, y: 300 }, [1, 0, 0, 0, 1, 0], 'selected');
+        const unexploredTile = new Tile({ x: 300, y: 300 }, [1, 0, 0, 0, 1, 0], 'unexplored');
+        const selectedTile = new Tile({ x: 500, y: 500 }, [1, 0, 0, 0, 1, 0], 'selected');
         
-        exploredTile.is_explored = true;
-        unexploredTile.is_explored = false;
-        selectedTile.is_explored = false;
+        exploredTile.explore(0);
         
         tileArr.selected_tile = selectedTile;
         global.tileArr = tileArr;

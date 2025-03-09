@@ -1,6 +1,5 @@
 //main file, that is used to build the webpage and contains code that draws the canvas
 
-
 let to_screen = [20, 0, 0, 0, -20, 0];
 let translation_vector = [1, 0, 0, 0, 1, 0];
 let scaleFactor = 10;
@@ -59,12 +58,10 @@ let scoreDisplay;
 const cols = {};
 let black_colour;
 let red_colour;
-//legacy draw function
 
 
 function decideColour(tile) {
   //case for determining what to fill a tile in, characteristics include, whether or not it is seleceted, whether or not it has been explored
-  if (!isGameRunning) return exploredColour;
   if (is3DMode)return explored3DColour;
 
   if (!tile.is_explored) {
@@ -74,19 +71,6 @@ function decideColour(tile) {
   } 
   return exploredColour;
 }
-
-
-//used for debugging / visualising patterns of certain tiles.
-// function decideColour(tile){
-//   if (tile.label == "P1"){
-//     return red_colour
-//   } else if (tile.label == "F2"){
-//     return blue_colour
-//   } else if (tile.label == "H3"){
-//     return yellow_colour
-//   }else return white_colour;
-// }
-
 
 
 function drawSpriteAt(tile,flag=true){
@@ -126,10 +110,10 @@ function drawShapeIMG(tile,bool3D=true) {
   if (tile.is_explored && tile.adjacency_number) {
     textAlign(CENTER, CENTER);
     let adj_to_textcolour_map = {
-      1: color(0, 128, 0),     // green
-      2: color(0, 0, 255),     // blue
-      3: color(255, 0, 0),     // red
-      4: color(255, 192, 203)  // pink
+      1: color(0, 128, 0),     
+      2: color(0, 0, 255),     
+      3: color(255, 0, 0),    
+      4: color(255, 192, 203) 
     };    
     fill(adj_to_textcolour_map[tile.adjacency_number]);
     const tc = transPt(translation_vector, tile.centre);
@@ -387,13 +371,14 @@ function setupHeader() {
         const patch = constructPatch(...tiles);
         tiles = constructMetatiles(patch);
         const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
-        buildTileArray(tiles[2], level);
+        buildTileArray(tiles[0], level);
         ++level;
       }
+      const idx = { H: 0, T: 1, P: 2, F: 3 }[radio.value()];
+      buildTileArray(tiles[0], level);
       resetTimer();
       startTimer();
       loop();
-      console.log(tileArr.hat_tiles);
     }
   });
 
@@ -419,6 +404,7 @@ function setupHeader() {
     difficulty_btn.html(`Toggle Difficulty: ${difficulty_levels[current_difficulty_index]}`);
 
   });
+
   reset_btn.parent(header);
   build_super_btn.parent(header);
   score_display.parent(header);
@@ -486,7 +472,6 @@ function handleFirstClick(selected_tile){
 function setup() {
   tileArr = new TileArray();
 
-  ringBuilder = new RingBuilder(5);
   loadGraphics();
   windowWidth,windowHeight;
   const canvas = createCanvas(
@@ -677,4 +662,10 @@ function mouseReleased() {
   startMousePos = null;
   
   loop();
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { 
+    decideColour
+  };
 }

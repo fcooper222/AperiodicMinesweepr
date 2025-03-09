@@ -1,6 +1,9 @@
+//const { transPt } = require('../src/geometry.js');
+//ennable for testing.
+
 const distance_threshold = 0.01; // Adjust as needed
 class Tile {
-  constructor(centre, trans,label,edge_tracking = false) {
+  constructor(centre, trans,label) {
     this.centre = centre;
     this.trans = trans;
     this.label = label;
@@ -9,12 +12,7 @@ class Tile {
     this.is_explored = false;
     this.adjacency_number = null;
     this.flagged = false;
-  
-    if (edge_tracking){
-      //tile has 12 edges, initially set each to be 0, representign all edges have no matched tile
-      this.edges = [0,0,0,0,0,0,0,0,0,0,0,0];
 
-    } else {this.edges=null}
   }
 
   setXPos(pos) {
@@ -48,7 +46,6 @@ class TileArray {
   constructor() {
     this.hat_tiles = [];
     this.flagged_tiles=[];
-    this.n_tiles=[];
     this.selected_tile = null;
     this.game_score = 0;
     this.flagged_mines = 0;
@@ -116,88 +113,6 @@ class TileArray {
 }
 
 
-
-  buildNRings(init_tile,rings=5){
-
-    let inner_tiles = []; //contains the inner tiles in the array that are always considered valid
-    let outer_tiles = [init_tile]; //contains the outer tiles in the array that are valid, yet should be added to
-    let new_outer_tiles = []; //array of the new tiles being added to the current outer tiles.
-    this.add(init_tile, outer_tiles);
-    for (let i;i<rings;i++){
-    while (outer_tiles.some(tile => tile.edges.includes(0))){
-      let outer_tile = this.getRandomOpenTile(outer_tiles)
-      let trans = this.chooseValidTransformTo(outer_tile);
-      let tempTrans = mul(outer_tile.trans,trans);
-      if (this.checkIfTileValid(tempTrans)){
-        //tile is valid, add it to the surrounding tiles.
-
-        //make new tile, then add it to the array
-
-        this.updateSurroundingEdges();
-      }
-    }
-
-    //all outer tiles have been covered;
-    inner_tiles.push(...outer_tiles);
-    outer_tiles = [...new_outer_tiles];
-    new_outer_tiles = [];
-  }
-
-  inner_tiles.push(...outer_tiles);
-
-  return inner_tiles;
-  }
-
-  buildNTiles(init_tile, rings=10) {
-    let n_tiles = [init_tile];
-    const usedTransforms = new Map();
-    usedTransforms.set(0, new Set());
-    while (n_tiles.length < n) {
-        const randomTileIndex = Math.floor(Math.random() * n_tiles.length);
-        const selectedTile = n_tiles[randomTileIndex];
-        let validTransformFound = false;
- 
-        if (!usedTransforms.has(randomTileIndex)) {
-            usedTransforms.set(randomTileIndex, new Set());
-        }
- 
-        const indices = Array.from({length: local_hat_transforms.length}, (_, i) => i)
-            .filter(i => !usedTransforms.get(randomTileIndex).has(i));
-        
-        for (const transformIndex of indices) {
-            const transform = local_hat_transforms[transformIndex];
-            let newTrans = mul(selectedTile.trans, transform);
-            let newCentre = findCentreOfShape(hat_outline, newTrans);
-            let isValid = true;
- 
-            let nearby_tiles = this.rangeSearch(newCentre.x-10000, newCentre.x+10000, 
-                                              newCentre.y-10000, newCentre.y+10000, n_tiles);
- 
-            for (const existingTile of nearby_tiles) {
-                let distance = Math.hypot(existingTile.centre.x - newCentre.x, 
-                                        existingTile.centre.y - newCentre.y);
-                if (distance < 50 || this.checkForOverlap(existingTile.trans, newTrans)) {
-                    isValid = false;
-                    break;
-                }
-            }
- 
-            if (isValid) {
-                n_tiles.push(new Tile(newCentre, newTrans));
-                usedTransforms.get(randomTileIndex).add(transformIndex);
-                validTransformFound = true;
-                break;
-            }
-        }
- 
-        if (!validTransformFound && usedTransforms.get(randomTileIndex).size === local_hat_transforms.length) {
-            n_tiles.splice(randomTileIndex, 1);
-            usedTransforms.delete(randomTileIndex);
-        }
-    }
-    return n_tiles;
- }
-
   //this method uses the spatial grid algorithm, copied from stack overflow to fit my specs, not sure exactly how it works yet but it does so i wont touch it.
   findClosestTile(clickPt,arr=this.hat_tiles) {
     let tcpt = clickPt;
@@ -214,7 +129,7 @@ class TileArray {
       const dx = tcpt.x - tc.x;
       const dy = tcpt.y - tc.y;
       const distance = dx * dx + dy * dy;
-
+      console.log(tile, distance);
       if (distance < mdist) {
         mdist = distance;
         closest = tile;
@@ -279,16 +194,20 @@ class TileArray {
     );
     //set of current hat pts
     let baseHatPts = hat_outline.map((p) =>
-      transPt(mul(translation_vector, tile.trans), p)
+      //transPt(mul(translation_vector, tile.trans), p)
+      transPt(tile.trans, p)
+
     );
     let out_tiles = [];
-    for (let adjtile of adjacent_tiles) {
+    for (let adj_tile of adjacent_tiles) {
       let adjHatPts = hat_outline.map((p) =>
-        transPt(mul(translation_vector, adjtile.trans), p)
+        //transPt(mul(translation_vector, adjtile.trans), p)
+        transPt(adj_tile.trans, p)
+
       );
       // due to floating point errors we need a threshold because often points are within 0.0001 units of eachother but arent techniically equal
       if (this.hasClosePoints(baseHatPts, adjHatPts, distance_threshold)) {
-        out_tiles.push(adjtile);
+        out_tiles.push(adj_tile);
       }
     }
     return out_tiles;
@@ -406,4 +325,9 @@ class TileArray {
     this.flagged_tiles=[];
     this.flagged_mines = 0;
   }
+}
+
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { Tile, TileArray };
 }

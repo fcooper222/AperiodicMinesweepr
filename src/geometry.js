@@ -131,3 +131,24 @@ function intersect(p1, q1, p2, q2) {
 
   return pt(p1.x + uA * (q1.x - p1.x), p1.y + uA * (q1.y - p1.y));
 }
+
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { 
+    pt, 
+    hexPt, 
+    inv, 
+    mul, 
+    matrixTo, 
+    padd, 
+    psub, 
+    trot, 
+    getRotation, 
+    ttrans, 
+    rotAbout, 
+    transPt, 
+    matchSeg, 
+    matchTwo, 
+    intersect
+  };
+}

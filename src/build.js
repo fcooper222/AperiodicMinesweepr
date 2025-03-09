@@ -1,8 +1,14 @@
 // file that contains the methods for building the tile arrays.
+
+
+
+let currentRuleIndex = 0;
+
+
+
 function drawPolygon(shape, T, f, s, w) {
     return;
   }
-
 function findCentreOfShape(shape, T) {
     let tpts = [];
     for (let p of shape) {
@@ -352,3 +358,7 @@ function constructPatch(H, T, P, F) {
   
     return [new_H, new_T, new_P, new_F];
   }
+
+
+
+  

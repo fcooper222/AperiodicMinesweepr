@@ -1,0 +1,31 @@
+global.createCanvas = jest.fn();
+global.background = jest.fn();
+global.fill = jest.fn();
+global.stroke = jest.fn();
+global.beginShape = jest.fn();
+global.endShape = jest.fn();
+global.vertex = jest.fn();
+global.CLOSE = 'close';
+global.loadImage = jest.fn().mockResolvedValue({});
+global.image = jest.fn();
+global.ellipse = jest.fn();
+global.strokeWeight = jest.fn();
+global.textAlign = jest.fn();
+global.CENTER = 'center';
+global.text = jest.fn();
+global.textSize = jest.fn();
+
+// Mock game-specific globals
+global.translation_vector = [0, 0];
+global.hat_outline = [];
+global.adjacency_radius = 1;
+global.isGameRunning = false;
+global.is3DMode = false;
+global.score = 0;
+global.updateScore = jest.fn();
+global.handleGameOver = jest.fn();
+global.tileArr = null;
+global.exploredColour = '#ff0000';
+global.unexploredColour = '#0000ff';
+global.selectedColour = '#00ff00';
+global.explored3DColour = '#ff00ff';

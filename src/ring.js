@@ -1,5 +1,8 @@
 //code for building a bottom up ring based approach, should be the final dep on the html due to little relying o nit apart from draw
 
+//THIS CODE IS UNFINISHED AND IS NOT PART OF THE MAIN PAGE CONTENT
+
+
 class RingBuilder{
     constructor(n_rings){
         this.n_rings = n_rings;
