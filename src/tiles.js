@@ -69,9 +69,6 @@ class TileArray {
         arr.splice(index, 1);
     }
   }
-  setDifficulty(difficulty){
-    
-  }
 
   binaryAdd(tile,arr=this.hat_tiles) {
     let low = 0;
@@ -129,7 +126,6 @@ class TileArray {
       const dx = tcpt.x - tc.x;
       const dy = tcpt.y - tc.y;
       const distance = dx * dx + dy * dy;
-      console.log(tile, distance);
       if (distance < mdist) {
         mdist = distance;
         closest = tile;
@@ -194,18 +190,16 @@ class TileArray {
     );
     //set of current hat pts
     let baseHatPts = hat_outline.map((p) =>
-      //transPt(mul(translation_vector, tile.trans), p)
       transPt(tile.trans, p)
 
     );
     let out_tiles = [];
     for (let adj_tile of adjacent_tiles) {
       let adjHatPts = hat_outline.map((p) =>
-        //transPt(mul(translation_vector, adjtile.trans), p)
         transPt(adj_tile.trans, p)
 
       );
-      // due to floating point errors we need a threshold because often points are within 0.0001 units of eachother but arent techniically equal
+      // due to floating point errors of 0.01 units that represents adjacency
       if (this.hasClosePoints(baseHatPts, adjHatPts, distance_threshold)) {
         out_tiles.push(adj_tile);
       }
@@ -280,9 +274,6 @@ class TileArray {
     }
   }
   mineTriggered() {
-    //function that is called when a mine is stepped on
-
-    
     handleGameOver(this.flagged_mines);
   }
   // find first tile within a ceratin range using a binary search, then linear add all of the tiles in the range until no more can be.
