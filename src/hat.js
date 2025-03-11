@@ -562,11 +562,7 @@ function draw() {
       height / 2 + 50
     );
     for (let tile of tilesOnCanvas) {
-      if (is3DMode){
-        drawShape(tile,true)
-      } else { 
-        drawShape(tile);
-      }
+      drawShape(tile);
       if (tile.is_mine){
         drawSpriteAt(tile,false); //draws mine at all tiles
       }
