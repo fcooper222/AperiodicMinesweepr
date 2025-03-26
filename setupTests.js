@@ -29,3 +29,27 @@ global.exploredColour = '#ff0000';
 global.unexploredColour = '#0000ff';
 global.selectedColour = '#00ff00';
 global.explored3DColour = '#ff00ff';
+
+
+global.flagSprite = { width: 50, height: 50 };
+global.mineSprite = { width: 50, height: 50 };
+global.spriteImages2D = [{}];
+global.spriteImages3D = [{}];
+global.selectImage = jest.fn(() => 0);
+
+
+global.push = jest.fn();
+global.pop = jest.fn();
+global.noStroke = jest.fn();
+global.textFont = jest.fn();
+global.textStyle = jest.fn();
+global.BOLD = 'bold';
+global.black_colour = 'black';
+global.translate = jest.fn();
+global.color = jest.fn((...args) => ({
+  levels: args
+}));
+global.red = jest.fn(() => 50);
+global.green = jest.fn(() => 150); 
+global.blue = jest.fn(() => 200);
+global.alpha = jest.fn(() => 255);
