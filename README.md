@@ -67,3 +67,8 @@ Preset colour schemes are also available on the right.
 
 If you want to clear the local scores, press the CLEAR LEADERBOARD button.
 
+## Credit:
+Thank you to Craig S Kaplan for providing a starting point for this project, including the hat shape and grid formulation functions, the repository can be viewed [here:](https://github.com/isohedral/hatviz)
+
+
+Mine and flag sprites can be viewed here: [MINE](https://www.cleanpng.com/png-vampire-the-masquerade-–-bloodlines-vampire-the-2843744/). [FLAG](https://commons.wikimedia.org/wiki/File:Minesweeper_flag.svg)
